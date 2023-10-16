@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * Plugin Name: Homey Extensions
+ * Plugin URI: https://www.muchomasstudio.com
+ * Description: This plugin adds functionality to the Homey theme and modifies some of its existing logic.
+ * Version: 1.0.0
+ * Author: muchomasstudio
+ * Author URI: https://www.muchomasstudio.com
+ * Collaborator: AndresOlg <github> https://github.com/AndresOlg </github>
+ * License: GPLv2
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: wpplugin
+ * Domain Path:  /homey-extensions
+ *
+ */
+// Abbreviation homey-extensions prefix: HX
+defined('ABSPATH') or die('¡Loading!');
+
+// Default config plugin
+define('HX_PLUGIN_PATH',              dirname(__FILE__));
+define('HX_ADMIN_IMAGES_URL',         HX_PLUGIN_PATH  . '/assets/images/');
+define('HX_TEMPLATES',                HX_PLUGIN_PATH . '/templates/');
+define('HX_VERSION',                  '1.0.0');
+
+global $wpdb;
+$prefix_homey_extensions =            $wpdb->prefix . 'hx_';
+define('HX_PREFIX',                   $prefix_homey_extensions);
+
+error_reporting(E_ALL);
+
+//Main plugin file
+require_once HX_PLUGIN_PATH . '/classes/class-hx-init.php';
+require_once HX_PLUGIN_PATH . '/classes/class-hx-register.php';
+
+// Initialize plugin.
+use Homey_Extensions as HX;
+
+HX::run();
+UserRegistration::run();
+
+restore_error_handler();
+
+// function mi_manipulador_de_errores($errno, $errstr, $errfile, $errline)
+// {
+//     error_log("Error: $errstr en $errfile en la línea $errline" . $errno);
+//     print_error("Error: $errstr en $errfile en la línea $errline" . $errno);
+// }
+
+// // Establecer el manejador de errores personalizado
+// set_error_handler('mi_manipulador_de_errores');
