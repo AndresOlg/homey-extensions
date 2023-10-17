@@ -18,10 +18,13 @@
 defined('ABSPATH') or die('¡Loading!');
 
 // Default config plugin
-define('HX_PLUGIN_PATH',              dirname(__FILE__));
+define('HX_PLUGIN_PATH',              plugin_dir_path(__FILE__));
+define('HX_PLUGIN_URL',               plugin_dir_url(__FILE__));
 define('HX_ADMIN_IMAGES_URL',         HX_PLUGIN_PATH  . '/assets/images/');
 define('HX_TEMPLATES',                HX_PLUGIN_PATH . '/templates/');
 define('HX_VERSION',                  '1.0.0');
+define('HX_JS_DIR', HX_PLUGIN_URL . 'assets/js/');
+define('HX_CSS_DIR', HX_PLUGIN_URL . 'assets/css/');
 
 global $wpdb;
 $prefix_homey_extensions =            $wpdb->prefix . 'hx_';

@@ -10,7 +10,7 @@ function init_plugin_hx()
 
     create_tables_plugin_hx();
     $auth_data = get_request_auth();
-    // fetch_and_store_countries($auth_data);
+    fetch_and_store_countries($auth_data);
 
     $functions_queue = array(
         // 'fetch_and_store_states',
@@ -31,7 +31,7 @@ function load_scripts()
 {
     $scripts_toload = array(
         // array('name' => 'tailwind-css', 'url' => 'https://cdn.tailwindcss.com'),
-        array('name' => 'hx-css', 'url' => HX_PLUGIN_PATH . '/assets/css/style.css')
+        array('name' => 'hx-css', 'url' => HX_PLUGIN_URL . '/assets/css/style.css')
     );
     foreach ($scripts_toload as $script) {
         wp_enqueue_script($script['name'], $script['url'], array(), null, false);

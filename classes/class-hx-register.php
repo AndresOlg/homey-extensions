@@ -34,16 +34,20 @@ class UserRegistration
             wp_enqueue_script('elementor-frontend');
         });
 
-        $this->load_ajax_scripts();
+        add_action('wp_enqueue_scripts', array($this, 'load_ajax_scripts_register'));
     }
 
-    public function load_ajax_scripts()
+    public function load_ajax_scripts_register()
     {
-        // General register_form
-        wp_enqueue_script('mi-script', get_template_directory_uri() . '/js/mi-script.js', array('jquery'), '1.0', true);
-        add_action('wp_enqueue_scripts', 'enqueue_custom_script');
+        $ajax_data = array('ajaxurl' => admin_url('admin-ajax.php'));
+        $ajax_scripts = array(
+            'ajax_register_form', // General register_form
+        );
 
-        
+        foreach ($ajax_scripts as $script) {
+            wp_enqueue_script("{$script}", HX_JS_DIR . $script . '.js', array('jquery'), HX_VERSION, true);
+            wp_localize_script("{$script}", 'ajax_object', $ajax_data);
+        }
     }
 
     public function redirect_to_profile_is_logged()
@@ -59,17 +63,18 @@ class UserRegistration
     public function registerUser()
     {
         check_ajax_referer('security_nonce', 'security');
-
-        $data = json_decode(stripslashes($_POST['data']), true);
-
+        error_log("Received AJAX Request");
+        error_log(file_get_contents("php://input"));
+        $data = json_decode(file_get_contents("php://input"), true);
         $data_form = $data;
         $data_form['type'] = 'main';
-        $data_validate = FormValidator::validateFormData($data_form);
-        if (!$data_validate['errors']) {
-            wp_send_json_success($data_form);
-        } else {
-            wp_send_json_error($data_validate);
-        }
+        wp_die(wp_send_json_success($data_form));
+        // $data_validate = FormValidator::validateFormData($data_form);
+        // if (!$data_validate['errors']) {
+        //     wp_send_json_success($data_form);
+        // } else {
+        //     wp_send_json_error($data_validate);
+        // }
         exit;
     }
 
@@ -77,7 +82,7 @@ class UserRegistration
     {
         check_ajax_referer('security_nonce', 'security');
 
-        $data = json_decode(stripslashes($_POST['data']), true);
+        $data = json_decode(file_get_contents("php://input"), true);
 
         $data_form = $data;
         $data_form['type'] = 'hoster';
@@ -94,10 +99,11 @@ class UserRegistration
     {
         check_ajax_referer('security_nonce', 'security');
 
-        $data = json_decode(stripslashes($_POST['data']), true);
+        $data = json_decode(file_get_contents("php://input"), true);
 
         $data_form = $data;
         $data_form['type'] = 'traveler';
+        wp_die(json_encode($data_form));
         $data_validate = FormValidator::validateFormData($data_form);
         if (!$data_validate['errors']) {
             wp_send_json_success($data_form);

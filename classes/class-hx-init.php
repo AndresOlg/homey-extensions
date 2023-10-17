@@ -35,14 +35,8 @@ class Homey_Extensions
         if ($this->plugin_status() == 'false') {
             register_activation_hook(__FILE__, array('Homey_Extensions', 'init_plugin_hx'));
             register_deactivation_hook(__FILE__, array('Homey_Extensions', 'deactive_plugin_hx'));
-            add_action('hx_enqueue_scripts', array(__CLASS__, 'hx_enqueue_scripts'));
         }
         init_plugin_hx();
-    }
-
-    public static function hx_enqueue_scripts()
-    {
-        wp_enqueue_style('css_homey_extensions', plugins_url('assets/css/style.css', __FILE__));
     }
 
     private function hx_include_files()

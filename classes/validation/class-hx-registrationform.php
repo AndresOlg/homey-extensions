@@ -32,6 +32,7 @@ class RegistrationFormValidator
 
     private static function validateGeneralForm()
     {
+        $error_messagge='';
         $required_fields = array(
             'name', 'lastname', 'gender', 'country_residence',
         );
