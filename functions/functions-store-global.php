@@ -11,13 +11,15 @@ $phonecodes_data = array();
  * @return mixed
  */
 
-function get_url_geonames($type, $auth_data, $search_param = '')
+function get_url_geonames($type, $auth_data, $searchs_params)
 {
-    $search_param = strval($search_param);
     $url = $auth_data['url'][$type];
     $user_param = decryptValue($auth_data['user_name'], $auth_data['secret_key']);
     if ($type != 'countries') {
-        $url = str_replace('{{ID}}', $search_param, $url);
+        $url = str_replace("{{COUNTRY}}", $searchs_params['COUNTRY'], $url);
+        if ($type == 'cities') {
+            $url = str_replace("{{STATE}}", $searchs_params['STATE'], $url);
+        }
     }
     $url_ = "{$url}&username={$user_param}";
     return $url_;
@@ -74,13 +76,14 @@ function insert_data($table_name, $insert_columns, $insert_values)
 function fetch_and_store_data($api_url)
 {
     // Make the API request.
-    $timeout = 1000;
+    $timeout = 50000;
     try {
+        $response = '';
         $response = wp_safe_remote_request($api_url, array('method' => 'GET', 'timeout' => $timeout));
-
         // Check for WP_Error and response code.
         if (is_wp_error($response)) {
-            throw new Exception('Error request API. ' . $api_url);
+            fetch_and_store_data($api_url);
+            throw new Exception('Error response API. ' . $api_url);
         }
 
         $status_code = wp_remote_retrieve_response_code($response);
@@ -92,11 +95,12 @@ function fetch_and_store_data($api_url)
                 return false;
             } elseif (isset($data['geonames'])) return $data['geonames'];
             else {
-                wp_die(json_encode($data));
+                throw new Exception('Error response status 200 body API. data: ' . json_encode($data));
             }
         } else {
             $response_body = wp_remote_retrieve_body($response);
-            throw new Exception('Error response API. ' . $api_url);
+            $data = json_encode($response_body, true, 4);
+            throw new Exception('Error response body API. data: ' . $data);
         }
     } catch (Exception $e) {
         // Exception Control.
@@ -105,21 +109,23 @@ function fetch_and_store_data($api_url)
     }
 }
 
+
 /**
  * Fetch and store countries.
  */
 function fetch_and_store_countries($auth_data)
 {
     global $wpdb;
-    $api_url = get_url_geonames('countries', $auth_data);
+    $api_url = get_url_geonames('countries', $auth_data, []);
     $table_name = HX_PREFIX . 'countries';
     $insert_columns = array('geonameID', 'country_name', 'country_short_name', 'country_phone_code');
-    $data = fetch_and_store_data($api_url);
-    if (!empty($data)) {
-        $check_query = "SELECT COUNT(*) FROM $table_name";
-        $table_row_count = $wpdb->get_var($check_query);
+    $check_query = "SELECT COUNT(*) FROM $table_name";
+    $table_row_count = $wpdb->get_var($check_query);
 
-        if ($table_row_count == 0) {
+    if ($table_row_count == 0) {
+        $data = fetch_and_store_data($api_url);
+        if (!empty($data)) {
+
             $insert_values = array();
             foreach ($data as $item) {
                 $values = array(
@@ -144,24 +150,38 @@ function fetch_and_store_countries($auth_data)
     $table_states = HX_PREFIX . 'states';
     $check_query = "SELECT COUNT(*) FROM $table_states";
     $table_row_count = $wpdb->get_var($check_query);
+    $geonameIds = array();
+    $insert_values = array();
 
     if ($table_row_count == 0) {
         $countries = $wpdb->get_results("SELECT * FROM {$table_countries}", ARRAY_A);
         if (empty($states_data)) {
             foreach ($countries as $country) {
-                $api_url = get_url_geonames('states', $auth_data, $country['geonameID']);
+                $api_url = get_url_geonames('states', $auth_data, array(
+                    'COUNTRY' => $country['country_short_name'],
+                ));
                 $data = fetch_and_store_data($api_url);
-                if ($data != false or !empty($data)) $states_data[$country['id']] = $data;
+                if ($data !== false) {
+                    $countryId = $country['id'];
+                    if (isset($states_data[$countryId]) && !in_array($states_data[$countryId]['geonameId'], $geonameIds)) {
+                        $states_data[$countryId] = $data;
+                    }
+                }
             }
         }
+
         if (!empty($states_data)) {
             foreach ($states_data as $country => $states) {
                 foreach ($states as $state) {
+                    $geonameId = $state['geonameId'];
+                    $countryCode = $state['countryCode'];
+                    $name = $state['name'];
+
                     $values = array(
-                        $state['geonameId'],
+                        $geonameId,
                         $country,
-                        $state['countryCode'],
-                        $state['name']
+                        $countryCode,
+                        $name
                     );
                     $insert_values[] = $values;
                 }
@@ -187,34 +207,46 @@ function fetch_and_store_cities($auth_data)
     $table_cities = HX_PREFIX . 'cities';
     $check_query = "SELECT COUNT(*) FROM $table_cities";
     $table_row_count = $wpdb->get_var($check_query);
+    $geonameIds = array();
+    $insert_values = array();
+
     if ($table_row_count == 0) {
         $states = $wpdb->get_results("SELECT * FROM {$table_states}", ARRAY_A);
         if (!empty($states)) {
             foreach ($states as $state) {
-                $state_name = rawurlencode(strtolower($state['state_name']));
-                $state_name = str_replace("%27", "'", $state_name);
-                $api_url = get_url_geonames('cities', $auth_data, $state['geonameID']);
+                $api_url = get_url_geonames('cities', $auth_data, array(
+                    'COUNTRY' => $state['country_code'],
+                    'STATE' => $state['state_name'],
+                ));
                 $data = fetch_and_store_data($api_url);
-                if ($data != false || !empty($data)) $cities_data[$state['id']] = $data;
+                if ($data !== false) {
+                    $stateId = $state['id'];
+                    if (isset($cities_data[$stateId]) && !in_array($cities_data[$stateId]['geonameId'], $geonameIds)) {
+                        $cities_data[$stateId] = $data;
+                    }
+                }
             }
         }
         if (!empty($cities_data)) {
             foreach ($cities_data as $state => $cities) {
                 foreach ($cities as $city) {
+                    $geonameId = $city['geonameId'];
+                    $countryCode = $city['countryCode'];
+                    $name = $city['name'];
                     $values = array(
-                        $city['geonameID'],
+                        $geonameId,
                         $state,
-                        $state['country_code'],
-                        $city['name']
+                        $countryCode,
+                        $name
                     );
                     $insert_values[] = $values;
                 }
             }
-            if (!empty($insert_values)) {
-                $table_name = $table_states;
-                $insert_columns = array('geonameID', 'state_id', 'country_code', 'city_name');
-                insert_data($table_name, $insert_columns, $insert_values);
-            }
+        }
+        if (!empty($insert_values)) {
+            $table_name = $table_cities;
+            $insert_columns = array('geonameID', 'state_id', 'country_code', 'city_name');
+            insert_data($table_name, $insert_columns, $insert_values);
         }
     }
 }
