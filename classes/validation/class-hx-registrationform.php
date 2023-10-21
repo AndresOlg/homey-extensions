@@ -2,7 +2,8 @@
 class RegistrationFormValidator
 {
     protected static $instance;
-    
+    protected static $data_form;
+    protected static $error_messagge;
     public static function run()
     {
         if (is_null(self::$instance)) {
@@ -15,6 +16,8 @@ class RegistrationFormValidator
     {
         $isvalidate = null;
         $type = $data_form->type;
+        static::$data_form = $data_form;
+
         switch ($type) {
             case 'main':
                 $isvalidate = self::validateGeneralForm();
@@ -32,30 +35,26 @@ class RegistrationFormValidator
 
     private static function validateGeneralForm()
     {
-        $error_messagge='';
         $required_fields = array(
             'name', 'lastname', 'gender', 'country_residence',
         );
+        $errors = array();
 
-        if (isset($_POST['general_register'])) {
-            $errors = array();
-
-            if (empty($_POST['name'])) {
-                $errors['username'] = 'El nombre de usuario es obligatorio.';
-            }
-
-            if (empty($_POST['email'])) {
-                $errors['email'] = 'El correo electrónico es obligatorio.';
-            } elseif (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-                $errors['email'] = 'Ingrese una dirección de correo electrónico válida.';
-            }
-
-            if (empty($_POST['password'])) {
-                $errors['password'] = 'La contraseña es obligatoria.';
-            }
-            if (!empty($errors)) return array('errors' => $errors);
-            else return array('status' => 'OK', 'message' => 'success');
+        if (empty($_POST['name'])) {
+            $errors['username'] = 'El nombre de usuario es obligatorio.';
         }
+
+        if (empty($_POST['email'])) {
+            $errors['email'] = 'El correo electrónico es obligatorio.';
+        } elseif (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Ingrese una dirección de correo electrónico válida.';
+        }
+
+        if (empty($_POST['password'])) {
+            $errors['password'] = 'La contraseña es obligatoria.';
+        }
+        if (!empty($errors)) return array('errors' => $errors);
+        else return array('status' => 'OK', 'message' => 'success');
     }
 
     private static function validateHosterForm()
@@ -104,5 +103,16 @@ class RegistrationFormValidator
             if (!empty($errors)) return ($errors);
             else return true;
         }
+    }
+
+    /**
+     * @param $user_data array()
+     * @return boolean
+     */
+    private function userExist($user_data)
+    {
+        $user_role=$user_data['role'];
+        $user_email=$user_data['email'];
+        $user_role=$user_data['role'];
     }
 }
