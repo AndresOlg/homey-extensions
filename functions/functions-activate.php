@@ -6,11 +6,9 @@ require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
 function init_plugin_hx()
 {
-    add_action('wp_enqueue_scripts', 'load_scripts');
-
     create_tables_plugin_hx();
     $auth_data = get_request_auth();
-    fetch_and_store_countries($auth_data);
+    // fetch_and_store_countries($auth_data);
 
     $functions_queue = array(
         // 'fetch_and_store_states',
@@ -27,16 +25,6 @@ function init_plugin_hx()
         }
     }
 }
-function load_scripts()
-{
-    $scripts_toload = array(
-        // array('name' => 'tailwind-css', 'url' => 'https://cdn.tailwindcss.com'),
-        array('name' => 'hx-css', 'url' => HX_PLUGIN_URL . '/assets/css/style.css')
-    );
-    foreach ($scripts_toload as $script) {
-        wp_enqueue_script($script['name'], $script['url'], array(), null, false);
-    }
-}
 
 function create_tables_plugin_hx()
 {
@@ -48,6 +36,8 @@ function create_tables_plugin_hx()
         "create_table_cities",
         "create_table_matchs",
         "create_table_preferences",
+        "create_table_user_history",
+        "create_table_preferences_history"
     );
 
     foreach ($functions as $function) {
@@ -80,10 +70,11 @@ function create_table_user_profile_data()
             type_DNI VARCHAR(8) NOT NULL DEFAULT 'ID',
             emergency_contact JSON DEFAULT '{ \"name\": \"\", \"telephone\": \"\" }',
             isverified ENUM('YES', 'NO'),
-            user_role ENUM('admin', 'traveler', 'hoster') NOT NULL DEFAULT 'admin',
+            user_role ENUM('traveler', 'hoster') NOT NULL,
             profile_image VARCHAR(255),
             data_traveler JSON,
             data_hoster JSON,
+            profile_score INT NOT NULL,
             PRIMARY KEY (`id`)
         ) ";
     $wpdb->query($sql);
@@ -211,6 +202,41 @@ function create_table_preferences()
               preferences_ico VARCHAR(255),
               preferences_status ENUM(\"0\",\"1\"),
               PRIMARY KEY (id)
+    )";
+    $wpdb->query($sql);
+}
+
+function create_table_user_history()
+{
+    global $wpdb;
+    $table_name = HX_PREFIX . "user_history";
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
+        return;
+    }
+    $sql = "CREATE TABLE IF NOT EXISTS $table_name(
+        id INT NOT NULL AUTO_INCREMENT,
+        profile_info JSON NOT NULL,
+        contact_info JSON NOT NULL,
+        user_role ENUM(\"hoster\",\"traveler\"),
+        user_preferences INT NOT NULL,
+        PRIMARY KEY (id)
+    )";
+    $wpdb->query($sql);
+}
+
+function create_table_preferences_history()
+{
+    global $wpdb;
+    $table_name = HX_PREFIX . "preferences_history";
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
+        return;
+    }
+    $sql = "CREATE TABLE IF NOT EXISTS $table_name(
+        id INT NOT NULL AUTO_INCREMENT,
+        user_id INT NOT NULL,
+        preferences JSON NOT NULL,
+        PRIMARY KEY (id)
+
     )";
     $wpdb->query($sql);
 }

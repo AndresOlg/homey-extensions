@@ -39,9 +39,9 @@ function get_request_auth()
             $url_base = $data['url']['base'];
 
             $data['url']['countries'] = "{$url_base}searchJSON?fcode=PCLI&maxRows=195";
-            $data['url']['country'] = "{$url_base}countryInfoJSON?country={{ID}}&maxRows=1";
-            $data['url']['states'] = "{$url_base}childrenJSON?geonameId={{ID}}&maxRows=195";
-            $data['url']['cities'] = "{$url_base}childrenJSON?geonameId={{ID}}&maxRows=195";
+            $data['url']['country'] = "{$url_base}countryInfoJSON?country={{COUNTRY}}&maxRows=1";
+            $data['url']['states'] = "{$url_base}search?fcode=ADM1&country={{COUNTRY}}&style=SHORT&lang=en&maxRows=100&type=json";
+            $data['url']['cities'] = "{$url_base}?q={{STATE}}&country={{COUNTRY}}&style=SHORT&lang=en&maxRows=100&type=json";
             return $data;
         } else {
             echo "Incorrect format .encrypt, contact your plugin provider";
@@ -56,7 +56,12 @@ function get_request_auth()
 
 function get_data_phonecodes()
 {
-    $file_json = HX_PLUGIN_PATH . '/jsons/country_phone_codes.json';
+    $file_json = HX_JSON_DIR . 'country_phone_codes.json';
+    return get_data_json($file_json);
+}
+
+function get_data_json($file_json)
+{
     if (file_exists($file_json)) {
         $contentJSON = file_get_contents($file_json);
         $datos = $contentJSON;
@@ -70,6 +75,7 @@ function get_data_phonecodes()
         echo "Error file not exist!";
     }
 }
+
 function getObjectByProperty($data, $property, $value)
 {
     foreach ($data as $countryCode => $country) {

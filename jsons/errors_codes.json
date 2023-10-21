@@ -1,0 +1,34 @@
+{
+    "errors": [
+        {
+            "code": "ERR-U001",
+            "messagge": "Username does not exist",
+            "type": "user"
+        },
+        {
+            "code": "ERR-U002",
+            "messagge": "Username is not valid",
+            "type": "user"
+        },
+        {
+            "code": "ERR-U003",
+            "messagge": "The user is blocked",
+            "type": "user"
+        },
+        {
+            "code": "ERR-U004",
+            "messagge": "This user was deactivated",
+            "type": "user"
+        },
+        {
+            "code": "ERR-U005",
+            "messagge": "Your role is not authorized for this operation",
+            "type": "user"
+        },
+        {
+            "code": "ERR-U006",
+            "messagge": "Your role is not authorized for this operation",
+            "type": "user"
+        }
+    ]
+}
