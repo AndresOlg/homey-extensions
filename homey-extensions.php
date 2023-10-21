@@ -25,6 +25,7 @@ define('HX_TEMPLATES',                HX_PLUGIN_PATH . '/templates/');
 define('HX_VERSION',                  '1.0.0');
 define('HX_JS_DIR', HX_PLUGIN_URL . 'assets/js/');
 define('HX_CSS_DIR', HX_PLUGIN_URL . 'assets/css/');
+define('HX_JSON_DIR', HX_PLUGIN_PATH . '/jsons/');
 
 global $wpdb;
 $prefix_homey_extensions =            $wpdb->prefix . 'hx_';
@@ -34,13 +35,15 @@ error_reporting(E_ALL);
 
 //Main plugin file
 require_once HX_PLUGIN_PATH . '/classes/class-hx-init.php';
-require_once HX_PLUGIN_PATH . '/classes/class-hx-register.php';
+
+register_activation_hook(__FILE__, array('Homey_Extensions', 'hxPluginActivation'));
+register_deactivation_hook(__FILE__, array('Homey_Extensions', 'hxPluginDeactivate'));
 
 // Initialize plugin.
 use Homey_Extensions as HX;
 
 HX::run();
-UserRegistration::run();
+
 
 restore_error_handler();
 
