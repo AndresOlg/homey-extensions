@@ -55,7 +55,7 @@ class UserRegistration
         if (is_user_logged_in() && is_page('register')) {
             wp_redirect(home_url('/profile'));
             exit;
-        } else {
+        } else if (is_page('register')) {
             $this->registrationFormTemplate();
         }
     }
@@ -63,18 +63,15 @@ class UserRegistration
     public function registerUser()
     {
         check_ajax_referer('security_nonce', 'security');
-        error_log("Received AJAX Request");
-        error_log(file_get_contents("php://input"));
-        $data = json_decode(file_get_contents("php://input"), true);
-        $data_form = $data;
+        $data = $_POST;
+        $data_form = $data['data'];
         $data_form['type'] = 'main';
-        wp_die(wp_send_json_success($data_form));
-        // $data_validate = FormValidator::validateFormData($data_form);
-        // if (!$data_validate['errors']) {
-        //     wp_send_json_success($data_form);
-        // } else {
-        //     wp_send_json_error($data_validate);
-        // }
+        $data_validate = FormValidator::validateFormData($data_form);
+        if (!$data_validate['errors']) {
+            wp_send_json_success($data_form);
+        } else {
+            wp_send_json_error($data_validate);
+        }
         exit;
     }
 
