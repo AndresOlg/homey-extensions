@@ -5,20 +5,28 @@ class Homey_Extensions
     protected static $instance;
     protected static $version = '1.0.0';
 
-    public static function run()
-    {
-        if (is_null(self::$instance)) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
-
     private function __construct()
     {
-        $this->hx_include_files();
-        $this->init();
+        add_action('init', array($this, 'init'));
     }
-    public static function plugin_status()
+
+    /**
+     * Return plugin instance.
+     *
+     * @return homey_extensions
+     */
+    protected static function getInstance()
+    {
+        return is_null(static::$instance) ? new Homey_Extensions() : static::$instance;
+    }
+
+    public static function run()
+    {
+        self::hxIncludeFiles();
+        static::$instance = static::getInstance();
+    }
+
+    public static function pluginStatus()
     {
         return get_option('hx_activation') || false;
     }
@@ -28,21 +36,62 @@ class Homey_Extensions
         return self::$version;
     }
 
-    private function init()
+    public static function init()
     {
-        include_once(HX_PLUGIN_PATH . '/functions/functions-activate.php');
-
-        if ($this->plugin_status() == 'false') {
-            register_activation_hook(__FILE__, array('Homey_Extensions', 'init_plugin_hx'));
-            register_deactivation_hook(__FILE__, array('Homey_Extensions', 'deactive_plugin_hx'));
-        }
-        init_plugin_hx();
+        static::load_scripts();
+        UserRegistration::run();
     }
 
-    private function hx_include_files()
+    private static function load_scripts()
     {
-        $activation_status = get_option('hx_activation');
-        $class_files = array(
+        wp_enqueue_script(
+            'hx-toast-script',
+            HX_PLUGIN_URL . 'assets/js/hx_toast.js',
+            array('jquery'),
+            HX_VERSION,
+            true
+        );
+        wp_enqueue_style(
+            'hx-toast-style',
+            HX_PLUGIN_URL . 'assets/css/hx_toast.css',
+            array(),
+            HX_VERSION,
+            'all'
+        );
+        wp_enqueue_script(
+            'validate-register-script',
+            HX_PLUGIN_URL . 'assets/js/validate_inputs_register.js',
+            array('jquery'),
+            HX_VERSION,
+            true
+        );
+        wp_enqueue_style(
+            'hx_styles',
+            HX_PLUGIN_URL . 'assets/css/style.css',
+            array(),
+            HX_VERSION,
+            'all'
+        );
+    }
+
+    public static function hxPluginActivation()
+    {
+        include_once(HX_PLUGIN_PATH . '/functions/functions-activate.php');
+        $activation_status = update_option('hx_activation', 'true');
+        if ($activation_status == 'true') {
+            init_plugin_hx();
+        }
+    }
+    public static function hxPluginDeactivate()
+    {
+        include_once(HX_PLUGIN_PATH . '/functions/functions-deactivate.php');
+        remove_action('plugins_loaded', array(__CLASS__, 'load_scripts'), 0);
+        update_option('hx_activation', 'false');
+    }
+
+    private static function hxIncludeFiles()
+    {
+        $class_files = apply_filters('hxIncludeFiles', array(
             'class-hx-installer.php',
             'class-hx-login.php',
             'class-hx-cities.php',
@@ -54,31 +103,37 @@ class Homey_Extensions
             // 'class-hx-user-profiling.php',
             // 'class-hx-match.php',
             // 'class-hx-statistics.php',
-        );
-        $function_files = array(
+        ));
+        $function_files = apply_filters('hxIncludeFiles', array(
             // 'functions-prepare-backup.php',
             'functions-activate.php',
             'functions-uninstall.php',
-        );
-        if ($activation_status) {
-            $this->hx_load_files($class_files, '/classes/');
-            $this->hx_load_files($function_files, '/functions/');
-        }
+        ));
+        self::hxLoadFiles($class_files, '/classes/');
+        self::hxLoadFiles($function_files, '/functions/');
     }
 
-    private function hx_load_files($files, $dir)
+    private static function hxLoadFiles($files, $dir)
     {
         foreach ($files as $file) {
             $path = HX_PLUGIN_PATH . $dir . $file;
             if (file_exists($path)) {
-                include_once $path;
+                if ($dir == '/functions/') {
+                    require_once $path;
+                } else {
+                    include_once $path;
+                }
             }
         }
     }
 }
 
-
-function deactive_plugin_hx()
-{
-    update_option('hx_activation', 'false');
-}
+// add_menu_page(
+//     esc_html__( 'Homey', 'homey-core' ),
+//     esc_html__( 'Homey', 'homey-core' ),
+//     'manage_options',
+//     'homey_dashboard',
+//     array( 'homey_Dashboard', 'render' ),
+//     '',
+//     '4'
+// );
