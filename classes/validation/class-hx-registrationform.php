@@ -35,24 +35,7 @@ class RegistrationFormValidator
 
     private static function validateGeneralForm()
     {
-        $required_fields = array(
-            'name', 'lastname', 'gender', 'country_residence',
-        );
-        $errors = array();
 
-        if (empty($_POST['name'])) {
-            $errors['username'] = 'El nombre de usuario es obligatorio.';
-        }
-
-        if (empty($_POST['email'])) {
-            $errors['email'] = 'El correo electrónico es obligatorio.';
-        } elseif (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Ingrese una dirección de correo electrónico válida.';
-        }
-
-        if (empty($_POST['password'])) {
-            $errors['password'] = 'La contraseña es obligatoria.';
-        }
         if (!empty($errors)) return array('errors' => $errors);
         else return array('status' => 'OK', 'message' => 'success');
     }
@@ -76,7 +59,7 @@ class RegistrationFormValidator
             if (empty($_POST['password'])) {
                 $errors['password'] = 'La contraseña es obligatoria.';
             }
-            if (!empty($errors)) return ($errors);
+            if (!empty($errors)) return array("errors" => $errors);
             else return true;
         }
     }
@@ -111,8 +94,12 @@ class RegistrationFormValidator
      */
     private function userExist($user_data)
     {
-        $user_role=$user_data['role'];
-        $user_email=$user_data['email'];
-        $user_role=$user_data['role'];
+        global $wpdb;
+        $prefix=$wpdb->prefix;
+        $user_role = $user_data['role'];
+        $user_email = $user_data['email'];
+        $user_role = $user_data['role'];
+        $query="SELECT * FROM {$prefix}users where 
+        ";
     }
 }

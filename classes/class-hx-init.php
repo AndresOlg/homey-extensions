@@ -45,6 +45,14 @@ class Homey_Extensions
     private static function load_scripts()
     {
         wp_enqueue_script(
+            'hx-custom-script',
+            HX_PLUGIN_URL . 'assets/js/custom.js',
+            array('jquery'),
+            HX_VERSION,
+            true
+        );
+
+        wp_enqueue_script(
             'hx-toast-script',
             HX_PLUGIN_URL . 'assets/js/hx_toast.js',
             array('jquery'),

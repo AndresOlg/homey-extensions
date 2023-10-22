@@ -7,7 +7,7 @@ const toasts = new Toasts({
 function validateInput(inputType, value, field) {
 
 
-    if ([null, '', undefined].includes(value) && inputType != 'avatar_input') {
+    if ([null, '', undefined].includes(value)) {
         field.addClass('error-field');
         toasts.push({
             dismissAfter: 2000,
@@ -83,6 +83,7 @@ function validateInput(inputType, value, field) {
                     content: `The field ${inputType} is required`,
                     style: 'error'
                 });
+                return "invalid field";
             }
 
             break;
@@ -94,6 +95,7 @@ function validateInput(inputType, value, field) {
             } else {
                 field.after(`<span class="error-message">The password does not meet the strength criteria</span>`);
                 field.after(`<br/><span class="error-message">${messagge}</span>`);
+                return "invalid field";
             }
             break;
     }
