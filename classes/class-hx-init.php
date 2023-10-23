@@ -47,7 +47,7 @@ class Homey_Extensions
         wp_enqueue_script(
             'hx-custom-script',
             HX_PLUGIN_URL . 'assets/js/custom.js',
-            array('jquery'),
+            array('jquery', 'modernizr-custom'),
             HX_VERSION,
             true
         );
@@ -66,13 +66,6 @@ class Homey_Extensions
             HX_VERSION,
             'all'
         );
-        wp_enqueue_script(
-            'validate-register-script',
-            HX_PLUGIN_URL . 'assets/js/validate_inputs_register.js',
-            array('jquery'),
-            HX_VERSION,
-            true
-        );
         wp_enqueue_style(
             'hx_styles',
             HX_PLUGIN_URL . 'assets/css/style.css',
@@ -80,6 +73,16 @@ class Homey_Extensions
             HX_VERSION,
             'all'
         );
+
+        if (is_page('register') or is_page('login')) {
+            wp_enqueue_script(
+                'validate-register-script',
+                HX_PLUGIN_URL . 'assets/js/validate_inputs_register.js',
+                array('jquery'),
+                HX_VERSION,
+                true
+            );
+        }
     }
 
     public static function hxPluginActivation()
