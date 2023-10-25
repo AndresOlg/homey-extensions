@@ -1,9 +1,10 @@
 <?php
 
 include_once(HX_TEMPLATES . '/elementor-templates.php');
+include_once(HX_PLUGIN_PATH . '/classes/validation/class-hx-registrationform.php');
 
 use TemplatesHX\Elementor_Template_Handler as TemplateHandler;
-use RegistrationFormValidator as FormValidator;
+use ManageRegistrationForm as RegistrationForm;
 
 class UserRegistration
 {
@@ -28,51 +29,63 @@ class UserRegistration
 
         add_action('wp_ajax_traveler_preferences', array($this, 'registerTraveler'));
         add_action('wp_ajax_nopriv_traveler_preferences', array($this, 'registerTraveler'));
-        add_action('template_redirect', array($this, 'redirect_to_profile_is_logged'));
+        add_action('template_redirect', array($this, 'chooseUserRedirection'));
 
         add_action('wp_enqueue_scripts', function () {
             wp_enqueue_script('elementor-frontend');
         });
 
-        add_action('wp_enqueue_scripts', array($this, 'load_ajax_scripts_register'));
+        add_action('wp_enqueue_scripts', array($this, 'loadAjaxRegister'));
     }
 
-    public function load_ajax_scripts_register()
+    public function loadAjaxRegister()
     {
-        $ajax_data = array('ajaxurl' => admin_url('admin-ajax.php'));
-        $ajax_scripts = array(
-            'ajax_register_form', // General register_form
-        );
-
+        include_once(HX_PLUGIN_PATH . '/functions/functions-utils.php');
+        $ajax_data = generate_data_ajax();
+        $ajax_scripts = array('ajax_register_form');
         foreach ($ajax_scripts as $script) {
             wp_enqueue_script("{$script}", HX_JS_DIR . $script . '.js', array('jquery'), HX_VERSION, true);
             wp_localize_script("{$script}", 'ajax_object', $ajax_data);
         }
     }
 
-    public function redirect_to_profile_is_logged()
+    public function chooseUserRedirection()
     {
         if (is_user_logged_in() && is_page('register')) {
             wp_redirect(home_url('/profile'));
             exit;
         } else if (is_page('register')) {
+            wp_enqueue_script(
+                'validate-register-script',
+                HX_PLUGIN_URL . 'assets/js/validate_inputs_register.js',
+                array('jquery'),
+                HX_VERSION,
+                true
+            );
             $this->registrationFormTemplate();
         }
     }
 
     public function registerUser()
     {
-        check_ajax_referer('security_nonce', 'security');
-        $data = $_POST;
-        $data_form = $data['data'];
-        $data_form['type'] = 'main';
-        $data_validate = FormValidator::validateFormData($data_form);
-        if (!$data_validate['errors']) {
-            wp_send_json_success($data_form);
-        } else {
-            wp_send_json_error($data_validate);
+        try {
+            check_ajax_referer('security_nonce', 'security');
+            $data = $_POST;
+
+            if (isset($data)) {
+                $data_form = $data;
+                $data_form['type'] = 'main';
+                $data_validate = RegistrationForm::manageGeneralFormData($data_form);
+            }
+            if (!$data_validate['status'] === 'error') {
+                wp_send_json($data_validate);
+            } else {
+                $response = RegistrationForm::saveGeneralData();
+                wp_send_json($response);
+            }
+        } catch (\Throwable $th) {
+            wp_send_json(array('status' => 'error', 'code' => $th->getCode(), 'message' => $th->getMessage(), 'line' => $th->getLine(), 'file' => $th->getFile()));
         }
-        exit;
     }
 
     public function registerHoster()
@@ -83,11 +96,11 @@ class UserRegistration
 
         $data_form = $data;
         $data_form['type'] = 'hoster';
-        $data_validate = FormValidator::validateFormData($data_form);
+        $data_validate = FormValidator::manageGeneralFormData($data_form);
         if (!$data_validate['errors']) {
-            wp_send_json_success($data_form);
+            wp_send_json($data_form);
         } else {
-            wp_send_json_error($data_validate);
+            wp_send_json($data_validate);
         }
         exit;
     }
@@ -100,12 +113,12 @@ class UserRegistration
 
         $data_form = $data;
         $data_form['type'] = 'traveler';
-        wp_die(json_encode($data_form));
-        $data_validate = FormValidator::validateFormData($data_form);
+
+        $data_validate = FormValidator::manageGeneralFormData($data_form);
         if (!$data_validate['errors']) {
-            wp_send_json_success($data_form);
+            wp_send_json($data_form);
         } else {
-            wp_send_json_error($data_validate);
+            wp_send_json($data_validate);
         }
         exit;
     }

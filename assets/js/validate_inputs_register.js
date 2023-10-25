@@ -1,16 +1,15 @@
 const toasts = new Toasts({
     width: 300,
     timing: 'ease',
-    duration: '.2s',
+    duration: '.5s',
     position: 'top-right' // top-left | top-center | top-right | bottom-left | bottom-center | bottom-right
 });
 function validateInput(inputType, value, field) {
 
 
-    if ([null, '', undefined].includes(value)) {
+    if ([null, '', undefined, false].includes(value) & inputType !== 'avatar_input') {
         field.addClass('error-field');
         toasts.push({
-            dismissAfter: 2000,
             title: 'Error empty fields found',
             content: `The field ${inputType} is required`,
             style: 'error'
@@ -56,14 +55,7 @@ function validateInput(inputType, value, field) {
             break;
 
         case "avatar_input":
-            if (!field.hasOwnProperty('files')) {
-                toasts.push({
-                    title: 'Error profile image not selected',
-                    content: `The field ${inputType} is required`,
-                    style: 'error'
-                });
-                return "invalid field";
-            } else if (field.files.length === 0) {
+            if (!value) {
                 toasts.push({
                     title: 'Error profile image not selected',
                     content: `The field ${inputType} is required`,
@@ -71,14 +63,12 @@ function validateInput(inputType, value, field) {
                 });
                 return "invalid field";
             }
-
             break;
 
         case "role":
             if (value == 0) {
                 field.addClass('error-field');
                 toasts.push({
-                    dismissAfter: 2000,
                     title: 'Error role user not selected',
                     content: `The field ${inputType} is required`,
                     style: 'error'
@@ -88,9 +78,22 @@ function validateInput(inputType, value, field) {
 
             break;
 
+        case "terms_conditions":
+            if (value == false) {
+                field.addClass('error-field');
+                toasts.push({
+                    title: 'Error from terms and conditions',
+                    content: `please accept the terms and conditions`,
+                    style: 'error'
+                });
+                return "invalid field";
+            }
+
+            break;
+
         case "password":
             const messagge = validatePassword(value);
-            if (messagge == null) {
+            if (!messagge) {
                 field.after(`<span class="success-message">The password is strong</span>`);
             } else {
                 field.after(`<span class="error-message">The password does not meet the strength criteria</span>`);

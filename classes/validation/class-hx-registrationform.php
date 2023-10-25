@@ -1,105 +1,137 @@
 <?php
-class RegistrationFormValidator
+include_once(HX_PLUGIN_PATH . '/classes/errors/class-hx-errors.php');
+include_once(HX_PLUGIN_PATH . '/functions/functions-utils.php');
+class ManageRegistrationForm
 {
+    public static $filename_img;
     protected static $instance;
+    protected static $errorHandler;
     protected static $data_form;
-    protected static $error_messagge;
-    public static function run()
+    public static function manageGeneralFormData($data_form)
     {
-        if (is_null(self::$instance)) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
-
-    public static function validateFormData($data_form)
-    {
-        $isvalidate = null;
-        $type = $data_form->type;
+        $response = null;
+        $type = $data_form['type'];
         static::$data_form = $data_form;
+        static::$instance = new ManageRegistrationForm();
 
-        switch ($type) {
-            case 'main':
-                $isvalidate = self::validateGeneralForm();
-                break;
-            case 'hoster':
-                $isvalidate = self::validateHosterForm();
-                break;
-            case 'traveler':
-                $isvalidate = self::validateTravelerForm();
-                break;
+        try {
+            static::$errorHandler = new ErrorHandler();
+
+            switch ($type) {
+                case 'main':
+                    $response = self::validateGeneralForm();
+                    break;
+                case 'hoster':
+                    // $isvalidate = self::validateHosterForm();
+                    break;
+                case 'traveler':
+                    // $isvalidate = self::validateTravelerForm();
+                    break;
+            }
+        } catch (\Throwable $th) {
+            array('status' => 'error', 'code' => $th->getCode(), 'message' => $th->getMessage(), 'line' => $th->getLine(), 'file' => $th->getFile());
         }
-
-        return $isvalidate == true ? $data_form : $isvalidate;
+        return $response;
     }
 
     private static function validateGeneralForm()
     {
-
-        if (!empty($errors)) return array('errors' => $errors);
-        else return array('status' => 'OK', 'message' => 'success');
+        $user = userExist(static::$data_form);
+        if ($user) {
+            $response = '';
+            if (!empty($user['email'])) {
+                $error_data = static::$errorHandler->getError('ERR-U007', 'user');
+                $response = array('status' => 'error', 'code' => $error_data['code'], 'message' => $error_data['message']);
+            } elseif ($user['username']) {
+                $error_data = static::$errorHandler->getError('ERR-U008', 'user');
+                $response = array('status' => 'error', 'code' => $error_data['code'], 'message' => $error_data['message']);
+            }
+            return $response;
+        } else {
+            $response_img = static::$instance->validateProfileImage();
+            if ($response_img['filename']) {
+                $response = array('status' => 'success', 'message' => 'The user is valid');
+            } else {
+                $response = $response_img;
+            }
+            return $response;
+        }
     }
 
     private static function validateHosterForm()
     {
-        if (isset($_POST['hoster_form'])) {
-            $errors = array();
-
-            // Validar campos requeridos
-            if (empty($_POST['username'])) {
-                $errors['username'] = 'El nombre de usuario es obligatorio.';
-            }
-
-            if (empty($_POST['email'])) {
-                $errors['email'] = 'El correo electrónico es obligatorio.';
-            } elseif (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-                $errors['email'] = 'Ingrese una dirección de correo electrónico válida.';
-            }
-
-            if (empty($_POST['password'])) {
-                $errors['password'] = 'La contraseña es obligatoria.';
-            }
-            if (!empty($errors)) return array("errors" => $errors);
-            else return true;
-        }
     }
 
     private static function validateTravelerForm()
     {
-        if (isset($_POST['traveler_form'])) {
-            $errors = array();
+    }
 
-            // Validar campos requeridos
-            if (empty($_POST['username'])) {
-                $errors['username'] = 'El nombre de usuario es obligatorio.';
-            }
+    public function validateProfileImage()
+    {
+        try {
+            $profile_image = static::$data_form['image_base64'];
+            $image_type = exif_imagetype($profile_image);
+            $allowed_extensions = array(
+                IMAGETYPE_GIF => 'gif',
+                'IMAGETYPE_JPG' => 'jpg',
+                IMAGETYPE_JPEG => 'jpeg',
+                IMAGETYPE_PNG => 'png'
+            );
 
-            if (empty($_POST['email'])) {
-                $errors['email'] = 'El correo electrónico es obligatorio.';
-            } elseif (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-                $errors['email'] = 'Ingrese una dirección de correo electrónico válida.';
-            }
 
-            if (empty($_POST['password'])) {
-                $errors['password'] = 'La contraseña es obligatoria.';
+            if (isset($allowed_extensions[$image_type])) {
+                $file_extension = $allowed_extensions[$image_type];
+                $prefix_img = substr(static::$data_form['user_login'], 0, 2) . '-';
+
+                $file_name = 'avatar_' . strtoupper($prefix_img) . time() . '.' . $file_extension;
+                $file_path = HX_UPLOAD_DIR['basedir'] . '/homey-extensions/profile_avatars/';
+
+                return array('filename' => $file_name, 'filepath' => $file_path, 'file_ext' => $file_extension);
+            } else {
+                $error_data = static::$errorHandler->getError('ERR-F001', 'files');
+                $response = array('status' => 'error', 'code' => $error_data['code'], 'message' => $error_data['message']);
+                return $response;
             }
-            if (!empty($errors)) return ($errors);
-            else return true;
+        } catch (\Throwable $th) {
+            array('status' => 'error', 'code' => $th->getCode(), 'message' => $th->getMessage(), 'line' => $th->getLine(), 'file' => $th->getFile());
         }
     }
 
-    /**
-     * @param $user_data array()
-     * @return boolean
-     */
-    private function userExist($user_data)
+
+    public static function saveGeneralData()
     {
-        global $wpdb;
-        $prefix=$wpdb->prefix;
-        $user_role = $user_data['role'];
-        $user_email = $user_data['email'];
-        $user_role = $user_data['role'];
-        $query="SELECT * FROM {$prefix}users where 
-        ";
+        $profile_image = static::$data_form['image_base64'];
+        $image_data = self::saveProfileImage($profile_image);
+
+        if ($image_data['status'] !== 'success') return $image_data;
+
+        static::$data_form['filename'] = $image_data['data']['filename'];
+        static::$data_form['filepath'] = $image_data['data']['filepath'];
+    }
+
+    private static function saveProfileImage($profile_image)
+    {
+        try {
+            $profile_image = static::$data_form['image_base64'];
+            $image_type = exif_imagetype($profile_image);
+            $allowed_extensions = array(
+                IMAGETYPE_GIF => 'gif',
+                'IMAGETYPE_JPG' => 'jpg',
+                IMAGETYPE_JPEG => 'jpeg',
+                IMAGETYPE_PNG => 'png'
+            );
+            $file_extension = $allowed_extensions[$image_type];
+            $prefix_img = substr(static::$data_form['user_login'], 0, 2) . '-';
+            $file_name = 'avatar_' . strtoupper($prefix_img) . time() . '.' . $file_extension;
+            $file_path = HX_UPLOAD_DIR['basedir'] . '/homey-extensions/profile_avatars/';
+
+            $img_data = getDataBinaryImg($profile_image);
+            $result_saveImg = saveImage_WP($img_data, $file_path, $file_name, $file_extension);
+            $response = $result_saveImg;
+
+            return $response;
+        } catch (\Throwable $th) {
+            array('status' => 'error', 'code' => $th->getCode(), 'message' => $th->getMessage(), 'line' => $th->getLine(), 'file' => $th->getFile());
+        }
     }
 }

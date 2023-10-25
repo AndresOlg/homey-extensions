@@ -26,6 +26,7 @@ define('HX_VERSION',                  '1.0.0');
 define('HX_JS_DIR', HX_PLUGIN_URL . 'assets/js/');
 define('HX_CSS_DIR', HX_PLUGIN_URL . 'assets/css/');
 define('HX_JSON_DIR', HX_PLUGIN_PATH . '/jsons/');
+define('HX_UPLOAD_DIR',              wp_upload_dir());
 
 global $wpdb;
 $prefix_homey_extensions =            $wpdb->prefix . 'hx_';

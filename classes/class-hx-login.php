@@ -21,10 +21,10 @@ class LoginManager
     public function init()
     {
         // Initialize Hooks 
-        add_action('template_redirect', 'redirect_to_profile_is_logged');
+        add_action('template_redirect', 'chooseUserRedirection');
     }
 
-    public function redirect_to_profile_is_logged()
+    public function chooseUserRedirection()
     {
         if (is_user_logged_in() && is_page('login')) {
             wp_redirect(home_url('/profile'));

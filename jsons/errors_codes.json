@@ -2,33 +2,48 @@
     "errors": [
         {
             "code": "ERR-U001",
-            "messagge": "Username does not exist",
+            "message": "Username does not exist",
             "type": "user"
         },
         {
             "code": "ERR-U002",
-            "messagge": "Username is not valid",
+            "message": "Username is not valid",
             "type": "user"
         },
         {
             "code": "ERR-U003",
-            "messagge": "The user is blocked",
+            "message": "The user is blocked",
             "type": "user"
         },
         {
             "code": "ERR-U004",
-            "messagge": "This user was deactivated",
+            "message": "This user was deactivated",
             "type": "user"
         },
         {
             "code": "ERR-U005",
-            "messagge": "Your role is not authorized for this operation",
+            "message": "Your role is not authorized for this operation",
             "type": "user"
         },
         {
             "code": "ERR-U006",
-            "messagge": "Your role is not authorized for this operation",
+            "message": "Your role is not authorized for this operation",
             "type": "user"
+        },
+        {
+            "code": "ERR-U007",
+            "message": "This email has already been registered",
+            "type": "user"
+        },
+        {
+            "code": "ERR-U008",
+            "message": "The username '$username' is already in use.",
+            "type": "user"
+        },
+        {
+            "code": "ERR-F001",
+            "message": "The format is invalid",
+            "type": "files"
         }
     ]
 }

@@ -76,12 +76,86 @@ function get_data_json($file_json)
     }
 }
 
-function getObjectByProperty($data, $property, $value)
+function getDataBinaryImg($image_base64)
 {
-    foreach ($data as $countryCode => $country) {
-        if ($country->$property === $value) {
-            return $country;
+    $image_data = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $image_base64));
+    return $image_data;
+}
+
+function saveImage_WP($image_data, $file_path, $file_name, $file_extension)
+{
+    try {
+        $new_image_data = createResizeImg($file_extension, $image_data);
+        if (wp_mkdir_p($file_path)) {
+            if (file_put_contents($file_path . $file_name, $new_image_data)) {
+                return array('status' => 'success', 'message' => 'Profile picture saved successfully!', 'data' => array('filename' => $file_name, 'filepath' => $file_path));
+            } else {
+                return array('status' => 'error', 'message' => 'Error saving profile image!');
+            }
+        } else {
+            return array('status' => 'error', 'message' => 'Error to create path file!');
         }
+    } catch (\Throwable $th) {
+        throw $th;
     }
-    return null;
+}
+
+function generate_data_ajax()
+{
+    $nonce = wp_create_nonce('security_nonce');
+    $ajax_url = admin_url('admin-ajax.php');
+
+    return array(
+        'security_nonce' => $nonce,
+        'ajax_url' => $ajax_url,
+    );
+}
+
+function createResizeImg($ext, $image_data)
+{
+    try {
+        $target_image = '';
+        $source_image = '';
+        $target_width = 400;
+        $target_height = 400;
+
+        $source_image = imagecreatefromstring($image_data);
+        $source_width = imagesx($source_image);
+        $source_height = imagesy($source_image);
+
+        $target_image = imagecreatetruecolor($target_width, $target_height);
+        imagecopyresampled($target_image, $source_image, 0, 0, 0, 0, $target_width, $target_height, $source_width, $source_height);
+        $resized_image_data = getResizedImageData($target_image, $ext);
+
+        imagedestroy($source_image);
+        imagedestroy($target_image);
+        return $resized_image_data;
+    } catch (\Throwable $th) {
+        throw $th;
+    }
+}
+
+function getResizedImageData($image, $extension)
+{
+    ob_start();
+    if ($extension === 'jpg' or $extension === 'jpeg') {
+        imagejpeg($image, null, 85);
+    } elseif ($extension === 'png') {
+        imagepng($image, null, 8);
+    } elseif ($extension === 'gif') {
+        imagegif($image, null);
+    }
+    return ob_get_clean();
+}
+
+
+/**
+ * @param $user_data array()
+ * @return array
+ */
+function userExist($user_data)
+{
+    $user_email = $user_data['email'];
+    $username = $user_data['user_login'];
+    return array('email' => email_exists($user_email), 'username' => username_exists($username));
 }

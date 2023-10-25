@@ -1,12 +1,10 @@
 jQuery(document).ready(function ($) {
     const imgPreview = $('#avatar_preview img');
     const removeButton = $('#remove_avatar');
-
     removeImage();
-
+    
     function loadAndPreviewImage() {
-        var input = this;
-
+        var input = document.getElementById('form-field-avatar_upload');
         if (input.files && input.files[0]) {
 
             const fileSize = input.files[0].size; // file size in bytes
@@ -40,7 +38,12 @@ jQuery(document).ready(function ($) {
         input.val('');
     }
 
-    function handleRegistration(e, ajaxUrl) {
+    function handleRegistration(e) {
+        $('#send_btn_register').prop('disabled', false).css({
+            'filter': 'saturate(100%)',
+            'cursor': 'auto'
+        });
+        const { ajax_url, security_nonce } = ajax_object;
         e.preventDefault();
 
         $('.error-message').remove();
@@ -56,42 +59,51 @@ jQuery(document).ready(function ($) {
         const emailuser = $('#form-field-email_user');
         const role = $('#form-field-role_user');
         const password = $('#form-field-password_user');
-        const [first_name, last_name] = [$('#form-field-first_name'), $('#form-field-last_name')];
-        const fullname = [first_name.val(), last_name.val()].join(' ');
-        const imageInput = $('form-field-avatar_upload');
+        const imageInput = $('#form-field-avatar_upload');
+        const terms_conditions = $('#form-field_term_condition');
 
         let invalidField = false;
         const inputs_to_validate = [
             ['username', username.val(), username],
             ['email', emailuser.val(), emailuser],
             ['role', role.val(), role],
-            ['first_name', first_name.val(), first_name],
             ['avatar_input', imageInput.val(), imageInput],
             ['password', password.val(), password],
+            ['terms_conditions', terms_conditions.is(':checked'), terms_conditions],
         ]
 
         inputs_to_validate.map(input => invalidField = validateInput(input[0], input[1], input[2]));
 
         if (!invalidField) {
+            $('#send_btn_register').prop('disabled', true).css({
+                'filter': 'saturate(5%)',
+                'cursor': 'not-allowed'
+            });
             hashValue(password.val()).then(pass => {
                 const jsonData = {
-                    action: 'general_register',
-                    data: {
-                        user_login: username.val(),
-                        user_pass: pass,
-                        user_name: fullname,
-                        email_pass: emailuser.val(),
-                        user_role: role.val() == 1 ? 'traveler' : 'hoster',
-                        image_base64: imgPreview.attr('src')
-                    }
+                    "action": 'general_register',
+                    "security": security_nonce,
+                    "user_login": username.val(),
+                    "user_pass": pass,
+                    "email_pass": emailuser.val(),
+                    "user_role": role.val() == 1 ? 'traveler' : 'hoster',
+                    "image_base64": imgPreview.attr('src')
                 };
+
+                const guest_data = localStorage.getItem('guest_data');
+                if (guest_data) jsonData['guest_data'] = guest_data;
 
                 $.ajax({
                     type: 'POST',
-                    url: ajaxUrl,
+                    url: ajax_url,
                     data: jsonData,
-                    complete: function (xhr, __) {
-                        const response = JSON.parse(xhr.responseText);
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#send_btn_register').prop('disabled', false).css({
+                            'filter': 'saturate(100%)',
+                            'cursor': 'auto'
+                        });;
+                        const response = JSON.parse(data);
                         if (response.status === 'OK') {
                             toasts.push({
                                 title: 'success registration',
@@ -104,6 +116,10 @@ jQuery(document).ready(function ($) {
 
                     },
                     error: function (xhr, status, error) {
+                        $('#send_btn_register').prop('disabled', false).css({
+                            'filter': 'saturate(100%)',
+                            'cursor': 'auto'
+                        });
                         toasts.push({
                             title: 'Error host',
                             content: `Error to register the user, please try again or contact the site administrator`,
@@ -116,17 +132,17 @@ jQuery(document).ready(function ($) {
 
             })
         }
+        return;
     }
 
     $('#browse_avatar').on('click', function (e) {
         e.preventDefault();
-        $('#form-field-avatar_upload').click();
+        $('#form-field-avatar_upload').attr("accept", "image/*").click();
     });
 
     $('#send_btn_register').on('click', function (e) {
         e.preventDefault();
-        const ajaxUrl = ajax_object.ajaxurl;
-        handleRegistration(e, ajaxUrl);
+        handleRegistration(e);
     });
     $('#register_form').on('send', function (e) {
         e.preventDefault();
