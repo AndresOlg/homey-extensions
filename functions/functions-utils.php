@@ -116,12 +116,12 @@ function createResizeImg($ext, $image_data)
     try {
         $target_image = '';
         $source_image = '';
-        $target_width = 400;
-        $target_height = 400;
 
         $source_image = imagecreatefromstring($image_data);
         $source_width = imagesx($source_image);
         $source_height = imagesy($source_image);
+        $target_width = $source_width / 2;
+        $target_height = $source_height / 2;
 
         $target_image = imagecreatetruecolor($target_width, $target_height);
         imagecopyresampled($target_image, $source_image, 0, 0, 0, 0, $target_width, $target_height, $source_width, $source_height);
@@ -158,4 +158,20 @@ function userExist($user_data)
     $user_email = $user_data['email'];
     $username = $user_data['user_login'];
     return array('email' => email_exists($user_email), 'username' => username_exists($username));
+}
+
+
+function getUserRole($role)
+{
+    if ($role === 'traveler') return 'homey_renter';
+    elseif ($role === 'hoster') return 'homey_host';
+    else return 'subscriber';
+}
+
+
+function initHomeyIncFiles()
+{
+    $plugin_dir = WP_PLUGIN_DIR . '/homey-login-register/';
+    require_once($plugin_dir . 'functions/login_register.php');
+    require_once($plugin_dir . 'functions/social_login.php');
 }

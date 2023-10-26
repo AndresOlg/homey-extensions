@@ -140,6 +140,60 @@ function validatePassword(password) {
     }
 }
 
+function displayFatalError(datamodal, $) {
+    const { errorTitle, errorMessage } = datamodal;
+    const template_modal = `
+    <div class="overlay_error" id="overlay"></div>
+    <div class="modal_error" id="errorModal">
+        <span class="error_close" id="modalClose">&times;</span>
+        <i class="fa fa-exclamation-triangle error-icon"></i>
+        <h4>${errorTitle}</h4>
+        ${errorMessage ? `<p id="errorMessage">${errorMessage}</p>` : ''}
+    </div>
+    `;
+    $('body').append(template_modal);
+
+    $('#overlay').show();
+    $('#errorModal').show();
+
+    $('#overlay').on('click', function () {
+        $(this).hide();
+        $('#errorModal').hide();
+    });
+
+    $('#modalClose').on('click', function () {
+        $('#errorModal').hide();
+        $('#overlay').hide();
+    });
+}
+
+function displaySuccessModal(datamodal, $) {
+    const { successTitle, successMessage } = datamodal;
+    const template_modal = `
+    <div class="overlay_success" id="overlay"></div>
+    <div class="modal_success" id="successModal">
+        <span class="success_close" id="modalClose">&times;</span>
+        <i class="fa fa-check success-icon"></i>
+        <h4>${successTitle}</h4>
+        ${successMessage ? `<p id="successMessage">${successMessage}</p>` : ''}
+    </div>
+    `;
+    $('body').append(template_modal);
+
+    $('#overlay').show();
+    $('#errorModal').show();
+
+    $('#overlay').on('click', function () {
+        $(this).hide();
+        $('#errorModal').hide();
+    });
+
+    $('#modalClose').on('click', function () {
+        $('#errorModal').hide();
+        $('#overlay').hide();
+    });
+}
+
 
 
 

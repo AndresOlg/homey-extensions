@@ -37,7 +37,12 @@
         },
         {
             "code": "ERR-U008",
-            "message": "The username '$username' is already in use.",
+            "message": "The username is already in use.",
+            "type": "user"
+        },
+        {
+            "code": "ERR-U009",
+            "message": "Error creating user, try again",
             "type": "user"
         },
         {

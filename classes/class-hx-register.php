@@ -1,10 +1,13 @@
 <?php
 
+include_once(HX_PLUGIN_PATH . 'functions/functions-utils.php');
 include_once(HX_TEMPLATES . '/elementor-templates.php');
-include_once(HX_PLUGIN_PATH . '/classes/validation/class-hx-registrationform.php');
+include_once(HX_PLUGIN_PATH . '/classes/controllers/class-hx-registrationform.php');
 
 use TemplatesHX\Elementor_Template_Handler as TemplateHandler;
-use ManageRegistrationForm as RegistrationForm;
+use ManageFormsHX\ManageRegistrationForm as RegistrationForm;
+
+initHomeyIncFiles();
 
 class UserRegistration
 {
@@ -76,12 +79,32 @@ class UserRegistration
                 $data_form = $data;
                 $data_form['type'] = 'main';
                 $data_validate = RegistrationForm::manageGeneralFormData($data_form);
-            }
-            if (!$data_validate['status'] === 'error') {
-                wp_send_json($data_validate);
-            } else {
-                $response = RegistrationForm::saveGeneralData();
-                wp_send_json($response);
+                if ($data_validate['status'] === 'error') {
+                    wp_send_json($data_validate);
+                } else {
+                    $user = RegistrationForm::saveUserData();
+                    $response = $user;
+                    if ($response['status'] === 'error') {
+                        return  wp_send_json($response);
+                    } else if (isset($user['user_id'])) {
+                        //[Path avatar image] uploads/homey-extensions/profile_avatars/$user['file_name'];
+                        $user_id = $user['user_id'];
+                        update_user_meta($user_id, 'profile_image', $user['filename']);
+
+                        $user_data = get_userdata($user_id);
+                        $user_data->set_role(getUserRole($data_form['user_role']));
+                        $updated = wp_update_user($user_data);
+
+                        if ($updated) {
+                            self::sendEmailConfirmation($user_id, $user['pass']);
+                            unset($user['pass']);
+                            unset($user['filepath']);
+                            unset($user['filename']);
+                            $response = array('status' => 'success', 'message' => 'The user registered successfully!', 'data' => $user);
+                        }
+                    }
+                    wp_send_json($response);
+                }
             }
         } catch (\Throwable $th) {
             wp_send_json(array('status' => 'error', 'code' => $th->getCode(), 'message' => $th->getMessage(), 'line' => $th->getLine(), 'file' => $th->getFile()));
@@ -96,7 +119,7 @@ class UserRegistration
 
         $data_form = $data;
         $data_form['type'] = 'hoster';
-        $data_validate = FormValidator::manageGeneralFormData($data_form);
+        $data_validate = RegistrationForm::manageGeneralFormData($data_form);
         if (!$data_validate['errors']) {
             wp_send_json($data_form);
         } else {
@@ -114,7 +137,7 @@ class UserRegistration
         $data_form = $data;
         $data_form['type'] = 'traveler';
 
-        $data_validate = FormValidator::manageGeneralFormData($data_form);
+        $data_validate = RegistrationForm::manageGeneralFormData($data_form);
         if (!$data_validate['errors']) {
             wp_send_json($data_form);
         } else {
@@ -149,5 +172,10 @@ class UserRegistration
         $template_name = 'traveler_form';
         $Elementor_Template = TemplateHandler::renderTemplate($template_name);
         echo $Elementor_Template;
+    }
+
+    public function sendEmailConfirmation($user_id, $pass)
+    {
+        homey_wp_new_user_notification($user_id, $pass);
     }
 }

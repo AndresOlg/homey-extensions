@@ -2,7 +2,7 @@ jQuery(document).ready(function ($) {
     const imgPreview = $('#avatar_preview img');
     const removeButton = $('#remove_avatar');
     removeImage();
-    
+
     function loadAndPreviewImage() {
         var input = document.getElementById('form-field-avatar_upload');
         if (input.files && input.files[0]) {
@@ -85,13 +85,10 @@ jQuery(document).ready(function ($) {
                     "security": security_nonce,
                     "user_login": username.val(),
                     "user_pass": pass,
-                    "email_pass": emailuser.val(),
+                    "user_email": emailuser.val(),
                     "user_role": role.val() == 1 ? 'traveler' : 'hoster',
                     "image_base64": imgPreview.attr('src')
                 };
-
-                const guest_data = localStorage.getItem('guest_data');
-                if (guest_data) jsonData['guest_data'] = guest_data;
 
                 $.ajax({
                     type: 'POST',
@@ -103,15 +100,19 @@ jQuery(document).ready(function ($) {
                             'filter': 'saturate(100%)',
                             'cursor': 'auto'
                         });;
-                        const response = JSON.parse(data);
-                        if (response.status === 'OK') {
+                        const response = data;
+                        if (response.status === 'success') {
                             toasts.push({
                                 title: 'success registration',
-                                content: '',
+                                content: response.message,
                                 style: 'success'
                             });
+                            window.location.href = window.location.origin+'/login';
                         } else {
-                            console.log(response);
+                            const title = response.message.split('<br>')[0]
+                            const msg = response.message.split('<br>')[1];
+                            const data_error = { errorTitle: title, errorMessage: msg };
+                            displayFatalError(data_error,$);
                         }
 
                     },
