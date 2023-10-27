@@ -155,7 +155,7 @@ function getResizedImageData($image, $extension)
  */
 function userExist($user_data)
 {
-    $user_email = $user_data['email'];
+    $user_email = $user_data['user_email'];
     $username = $user_data['user_login'];
     return array('email' => email_exists($user_email), 'username' => username_exists($username));
 }
@@ -168,10 +168,12 @@ function getUserRole($role)
     else return 'subscriber';
 }
 
-
-function initHomeyIncFiles()
+function include_templates_emails()
 {
-    $plugin_dir = WP_PLUGIN_DIR . '/homey-login-register/';
-    require_once($plugin_dir . 'functions/login_register.php');
-    require_once($plugin_dir . 'functions/social_login.php');
+    $plugin_dir_smtp = WP_PLUGIN_DIR . '/smtp-mail';
+    $theme_dir = get_theme_root() . '/homey/framework';
+
+    include_once $plugin_dir_smtp . '/index.php';
+    include_once $theme_dir . '/functions/helper.php';
+    include_once $theme_dir . '/options/homey-option.php';
 }

@@ -46,7 +46,6 @@ class ManageRegistrationForm
         static::$data_form['user_login'] = trim(sanitize_text_field(wp_kses(static::$data_form['user_login'], $allowed_html)));
         static::$data_form['user_email'] = trim(sanitize_text_field(wp_kses(static::$data_form['user_email'], $allowed_html)));
         static::$data_form['user_role'] = trim(sanitize_text_field(wp_kses(static::$data_form['user_role'], $allowed_html)));
-        static::$data_form['user_role'] = trim(sanitize_text_field(wp_kses(static::$data_form['user_role'], $allowed_html)));
 
         $user = userExist(static::$data_form);
         $response = '';

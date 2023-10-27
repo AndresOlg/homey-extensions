@@ -1,13 +1,15 @@
 <?php
 
+/** Thirths parts includes */
 include_once(HX_PLUGIN_PATH . 'functions/functions-utils.php');
 include_once(HX_TEMPLATES . '/elementor-templates.php');
+
+/** HX includes */
+include_once(HX_PLUGIN_PATH . 'functions/functions-email.php');
 include_once(HX_PLUGIN_PATH . '/classes/controllers/class-hx-registrationform.php');
 
 use TemplatesHX\Elementor_Template_Handler as TemplateHandler;
 use ManageFormsHX\ManageRegistrationForm as RegistrationForm;
-
-initHomeyIncFiles();
 
 class UserRegistration
 {
@@ -96,7 +98,11 @@ class UserRegistration
                         $updated = wp_update_user($user_data);
 
                         if ($updated) {
-                            self::sendEmailConfirmation($user_id, $user['pass']);
+                            $mail_response = static::sendEmailConfirmation($user_id, $user['pass'], getUserRole($data_form['user_role']));
+                            if ($mail_response) {
+                                $response = array('status' => 'success', 'data' => $user);
+                                return $response;
+                            }
                             unset($user['pass']);
                             unset($user['filepath']);
                             unset($user['filename']);
@@ -174,8 +180,8 @@ class UserRegistration
         echo $Elementor_Template;
     }
 
-    public function sendEmailConfirmation($user_id, $pass)
+    public static function sendEmailConfirmation($user_id, $pass, $role)
     {
-        homey_wp_new_user_notification($user_id, $pass);
+        return  hx_wp_new_user_notification($user_id, $pass, $role);
     }
 }
