@@ -6,7 +6,7 @@ include_once(HX_PLUGIN_PATH . "/functions/functions-utils.php");
 class ErrorHandler
 {
     public static $data_error = array();
-    protected static $error_codes = array();
+    protected  $error_codes = array();
     protected static $instance;
 
     public static $error_handler;

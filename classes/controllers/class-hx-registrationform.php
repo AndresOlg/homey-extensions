@@ -47,7 +47,7 @@ class ManageRegistrationForm
         static::$data_form['user_email'] = trim(sanitize_text_field(wp_kses(static::$data_form['user_email'], $allowed_html)));
         static::$data_form['user_role'] = trim(sanitize_text_field(wp_kses(static::$data_form['user_role'], $allowed_html)));
 
-        $user = userExist(static::$data_form);
+        $user = user_exist(static::$data_form);
         $response = '';
 
         if (!empty($user['user_email'])) {
@@ -136,7 +136,7 @@ class ManageRegistrationForm
             'user_login' => $data_form['user_login'],
             'user_pass' => $hashed_password,
             'user_email' => $data_form['user_email'],
-            'role' => getUserRole($data_form['user_role']),
+            'role' => get_user_role($data_form['user_role']),
             'user_status' => 0
         );
 
@@ -160,7 +160,7 @@ class ManageRegistrationForm
                 static::$data_form['filename'] = $image_data['data']['filename'];
                 static::$data_form['filepath'] = $image_data['data']['filepath'];
 
-                return array('user_id' => $user_id, 'filename' => static::$data_form['filename'], 'filepath' => static::$data_form['filepath'], 'pass' => $hashed_password);
+                return array('status' => 'success','user_id' => $user_id, 'filename' => static::$data_form['filename'], 'filepath' => static::$data_form['filepath'], 'pass' => $hashed_password);
             }
         } else {
             $error_data = static::$errorHandler->getError('ERR-U009', 'user');

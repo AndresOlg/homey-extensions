@@ -153,7 +153,7 @@ function getResizedImageData($image, $extension)
  * @param $user_data array()
  * @return array
  */
-function userExist($user_data)
+function user_exist($user_data)
 {
     $user_email = $user_data['user_email'];
     $username = $user_data['user_login'];
@@ -161,7 +161,7 @@ function userExist($user_data)
 }
 
 
-function getUserRole($role)
+function get_user_role($role)
 {
     if ($role === 'traveler') return 'homey_renter';
     elseif ($role === 'hoster') return 'homey_host';
@@ -176,4 +176,27 @@ function include_templates_emails()
     include_once $plugin_dir_smtp . '/index.php';
     include_once $theme_dir . '/functions/helper.php';
     include_once $theme_dir . '/options/homey-option.php';
+}
+
+
+function add_custom_rewrites_rules()
+{
+    add_rewrite_rule('^activation/email/confirmation/([^/]+)/?', 'index.php?token_activation=$matches[1]', 'top');
+    add_rewrite_rule('^resending/user/token/([^/]+)/?', 'index.php?user_reactivation=$matches[1]', 'top');
+}
+
+function user_id_to_hash($user_id)
+{
+    return dechex($user_id);
+}
+function hash_to_user_id($hash_id)
+{
+    return hexdec($hash_id);
+}
+
+function user_is_verified($user)
+{
+    $user_to_found = new WP_User($user->ID);
+    if (!empty($user_to_found->user_activation_key)) return true;
+    else return false;
 }

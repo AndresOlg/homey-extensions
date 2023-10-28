@@ -39,7 +39,7 @@
                                         <h1 style="color:#1e1e2d; font-weight:400; margin:0;font-size:32px;font-family:'Rubik',sans-serif;">{subject}</h1>
                                         <span style="display:inline-block; vertical-align:middle; margin:29px 0 26px; border-bottom:1px solid #cecece; 
                                         width:100px;">
-                                    </span>
+                                        </span>
                                     </td>
                                 </tr>
                                 <!-- Details Table -->
@@ -51,7 +51,8 @@
                                                     <td style="padding: 10px; border-bottom: 1px solid #ededed; border-right: 1px solid #ededed; width: 35%; font-weight:500; color:rgba(0,0,0,.64)">
                                                         Username:</td>
                                                     <td style="padding: 10px; border-bottom: 1px solid #ededed; color: #455056;">
-                                                        {username_id}</td>
+                                                        <a href="{user_profile}" style="color:#00DA8E">{username_id}</a>
+                                                    </td>
                                                 </tr>
                                                 <tr>
                                                     <td style="padding: 10px; border-right: 1px solid #ededed; width: 35%;font-weight:500; color:rgba(0,0,0,.64)">
@@ -76,15 +77,15 @@
                     </tr>
                     <?php if (!empty($socials) or !empty($email_footer)) : ?>
                         <tr>
-                            <td style="height:40px;">
-                                <div style="width: 95%;background-color: #272727;margin: 0 auto;height: 100%;">
+                            <td>
+                                <div style="text-align: center;color:white;margin: 0 auto;border:1px solid #eee; padding:30px;width: 95%;background-color: #272727;margin: 0 auto;height: 100%;">
                                     <? if ($email_footer) : ?>
-                                        <p style="margin-top:30px;margin-bottom: 10px;text-align: center;font-size: 14px;color:#777777;padding-top: 27px;">
+                                        <p style="margin-top:30px;margin-bottom: 10px;font-size: 14px;padding-top: 27px;">
                                             <?= $email_footer ?>
                                         </p>
                                     <?php endif; ?>
                                     <? if ($socials) : ?>
-                                        <p style="margin-bottom: 10px;text-align: center;font-size: 14px;color:#777777;padding-top: 27px;">
+                                        <p style="margin-bottom: 10px;text-align: center;font-size: 14px;padding-top: 27px;">
                                             <?= $socials ?>
                                         </p>
                                     <?php endif; ?>

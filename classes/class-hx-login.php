@@ -59,7 +59,7 @@ class LoginManager
         }
     }
 
-    private static function getUserRole($username)
+    private static function get_user_role($username)
     {
         $profile_data_user = UserProfileData::getByAttr('login_ID', $username)[0];
         return $profile_data_user['user_role'];

@@ -72,6 +72,9 @@ class Homey_Extensions
             HX_VERSION,
             'all'
         );
+        
+        // include_once(HX_PLUGIN_PATH . '/functions/functions-utils.php');
+        // remove_action('init', 'add_custom_rewrites_rules');
     }
 
     public static function hxPluginActivation()

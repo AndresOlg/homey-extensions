@@ -3,7 +3,7 @@
 include_once(HX_PLUGIN_PATH . '/functions/functions-utils.php');
 include_templates_emails();
 
-function hx_wp_new_user_notification($user_id, $randonpassword = '', $role)
+function hx_wp_new_user_notification($user_id, $randonpassword, $role)
 {
     $user = new WP_User($user_id);
 
@@ -14,7 +14,7 @@ function hx_wp_new_user_notification($user_id, $randonpassword = '', $role)
     // Send notification to admin
     $args = array(
         'user_login_register' => $user_login,
-        'user_profile' => site_url("author/" . $user_login),
+        'user_profile' => site_url("/dashboard/?dpage=users&user-id=$user_id"),
         'user_password'   => $randonpassword,
         'user_email_register' => $user_email,
         'user_role' => $user_role
@@ -30,31 +30,31 @@ function hx_wp_new_user_notification($user_id, $randonpassword = '', $role)
         return;
     }
 
-    $profile_url = homey_get_template_link_dash('template/dashboard-profile.php');
-
     // Send notification to registered user
     $vId = md5($user_id);
     update_user_meta($user_id, 'verification_id', $vId);
     update_user_meta($user_id, 'is_email_verified', 0);
+    update_user_meta($user_id, 'activation_token_expiration', date('Y-m-d H:i:s', strtotime('+24 hours')));
 
+    $site_url = get_option('siteurl');
     $args = array(
         'user_login_register'  =>  $user_login,
         'user_email_register'  =>  $user_email,
         'user_password'   => $randonpassword,
-        'profile_url'   => $profile_url . '?verification_id=' . $vId,
+        'activaction_url'   => "{$site_url}/activation/email/confirmation/{$vId}",
         'user_role' => $user_role
     );
 
     $email_user = hx_send_mail($user_email, 'new_user_register', $args);
 
-    if ($email_user) {
+    if (!is_wp_error($email_user)) {
         return (array(
-            'success' => true,
+            'status' => 'success',
             'message' => esc_html__("Email Sent Successfully!", 'homey-core')
         ));
     } else {
         return array(
-            'error' => false,
+            'status' => 'error',
             'message' => esc_html__("Server Error: Make sure Email function working on your server!", 'homey-core')
         );
     }
@@ -75,6 +75,7 @@ function hx_send_mail($email, $email_type, $args)
 function hx_emails_filter_replace($email, $message, $subject, $args, $email_type)
 {
     $args['site_url'] = get_option('siteurl');
+    $args['site_url'] = $args['site_url'] == 'localhost' ? 'https://wanderloop.com.co' : $args['site_url'];
     $args['site_title'] = get_option('blogname');
     $args['user_email'] = $email;
     $user = get_user_by('email', $email);
@@ -131,17 +132,21 @@ function hx_send_emails($user_email, $subject, $message, $type, $args)
     $email_content = str_replace('{role_user}', $args['user_role'], $email_content);
     $email_content = str_replace('{role_user}', $args['user_role'], $email_content);
 
-    if (isset($args['profile_url'])) {
-        $email_content = str_replace('{user_verification_link}', $args['profile_url'], $email_content);
-        $token = explode('verification_id=', $args['profile_url'])[1];
-        $email_content = str_replace('{token}', $token, $email_content);
+    if (isset($args['activaction_url'])) {
+        $email_content = str_replace('{user_verification_link}', $args['activaction_url'], $email_content);
+        $token = explode('/', $args['activaction_url'])[4];
+        $email_content = str_replace('{token_user}', $token, $email_content);
+    }
+
+    if (isset($args['user_profile'])) {
+        $email_content = str_replace('{user_profile}', $args['user_profile'], $email_content);
     }
 
     homey_write_log("sending email: {$subject} to {$user_email}");
     $info_email = array(
         'email' => $user_email,
         'subject' => $subject,
-        'message' => $email_content,
+        'message' => html_entity_decode($email_content),
         'name' => 'wanderloop.com',
         'headers' => $headers
     );
@@ -166,12 +171,14 @@ function get_template_email($type, $message, $socials, $email_footer)
             ob_start();
             include_once($template_path . '/new_user.phtml');
             $content_mail = ob_get_clean();
+            ob_clean();
             break;
         case 'admin_new_user_register':
             $template_path = HX_TEMPLATES . "/emails/admin";
             ob_start();
             include_once($template_path . '/new_user.phtml');
             $content_mail = ob_get_clean();
+            ob_clean();
             break;
     }
     return $content_mail;

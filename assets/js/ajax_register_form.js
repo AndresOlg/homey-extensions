@@ -107,7 +107,6 @@ jQuery(document).ready(function ($) {
                                 content: response.message,
                                 style: 'success'
                             });
-                            window.location.href = window.location.origin+'/login';
                         } else {
                             const title = response.message.split('<br>')[0]
                             const msg = response.message.split('<br>')[1];

@@ -41,6 +41,8 @@ class UserRegistration
         });
 
         add_action('wp_enqueue_scripts', array($this, 'loadAjaxRegister'));
+
+        add_action('template_redirect', array($this, 'activate_account'));
     }
 
     public function loadAjaxRegister()
@@ -94,11 +96,11 @@ class UserRegistration
                         update_user_meta($user_id, 'profile_image', $user['filename']);
 
                         $user_data = get_userdata($user_id);
-                        $user_data->set_role(getUserRole($data_form['user_role']));
+                        $user_data->set_role(get_user_role($data_form['user_role']));
                         $updated = wp_update_user($user_data);
 
                         if ($updated) {
-                            $mail_response = static::sendEmailConfirmation($user_id, $user['pass'], getUserRole($data_form['user_role']));
+                            $mail_response = static::sendEmailConfirmation($user_id, $user['pass'], get_user_role($data_form['user_role']));
                             if ($mail_response) {
                                 $response = array('status' => 'success', 'data' => $user);
                                 return $response;
@@ -182,6 +184,41 @@ class UserRegistration
 
     public static function sendEmailConfirmation($user_id, $pass, $role)
     {
-        return  hx_wp_new_user_notification($user_id, $pass, $role);
+        ob_start();
+        hx_wp_new_user_notification($user_id, $pass, $role);
+        $res = ob_get_contents();
+        ob_clean();
+        return  $res;
+    }
+
+    public static function activate_account()
+    {
+        global $wpdb;
+        if (get_query_var('token_activation')) {
+
+            $activation_token = get_query_var('token_activation');
+            $user = get_users(array(
+                'meta_key' => 'verification_id',
+                'meta_value' => $activation_token
+            ));
+            if (count($user) > 0) {
+                $token_expiration = get_user_meta($user[0]->ID, 'activation_token_expiration', true);
+                $user_id = $user[0]->ID;
+                if (strtotime($token_expiration) < current_time('timestamp')) {
+                    $user_id_hash = dechex($user_id);
+                    wp_redirect(home_url("/resending/user/token/{$user_id_hash}"));
+                    exit();
+                }
+                $user_activation_key = wp_generate_password(12, true);
+                $query = $wpdb->prepare(
+                    "UPDATE {$wpdb->prefix}users SET user_activation_key = %s WHERE ID = %d",
+                    $user_activation_key,
+                    $user_id
+                );
+                $wpdb->query($query);
+                exit();
+            }
+        }
+        wp_redirect(home_url("/"));
     }
 }
