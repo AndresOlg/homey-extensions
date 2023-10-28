@@ -178,13 +178,6 @@ function include_templates_emails()
     include_once $theme_dir . '/options/homey-option.php';
 }
 
-
-function add_custom_rewrites_rules()
-{
-    add_rewrite_rule('^activation/email/confirmation/([^/]+)/?', 'index.php?token_activation=$matches[1]', 'top');
-    add_rewrite_rule('^resending/user/token/([^/]+)/?', 'index.php?user_reactivation=$matches[1]', 'top');
-}
-
 function user_id_to_hash($user_id)
 {
     return dechex($user_id);

@@ -37,12 +37,15 @@ function hx_wp_new_user_notification($user_id, $randonpassword, $role)
     update_user_meta($user_id, 'activation_token_expiration', date('Y-m-d H:i:s', strtotime('+24 hours')));
 
     $site_url = get_option('siteurl');
+
+    $activation_token_expiration = get_user_meta($user_id, 'activation_token_expiration', true);
     $args = array(
         'user_login_register'  =>  $user_login,
         'user_email_register'  =>  $user_email,
         'user_password'   => $randonpassword,
         'activaction_url'   => "{$site_url}/activation/email/confirmation/{$vId}",
-        'user_role' => $user_role
+        'user_role' => $user_role,
+        'token_expiration' => $activation_token_expiration
     );
 
     $email_user = hx_send_mail($user_email, 'new_user_register', $args);
@@ -125,17 +128,17 @@ function hx_send_emails($user_email, $subject, $message, $type, $args)
     $email_content = str_replace('{subject}', $subject, $email_content);
     $email_content = str_replace('{site_url}', $home_link_url, $email_content);
 
-    $email_content = str_replace('{username_id}', $args['user_login_register'], $email_content);
-    $email_content = str_replace('{email_user}', $args['user_email_register'], $email_content);
+    $email_content = str_replace('{username_id}', trim($args['user_login_register']), $email_content);
+    $email_content = str_replace('{email_user}', trim($args['user_email_register']), $email_content);
     $email_content = str_replace('{site_name}', get_bloginfo('name'), $email_content);
-    $email_content = str_replace('{user_name}', $args['user_login_register'], $email_content);
-    $email_content = str_replace('{role_user}', $args['user_role'], $email_content);
-    $email_content = str_replace('{role_user}', $args['user_role'], $email_content);
+    $email_content = str_replace('{user_name}', trim($args['user_login_register']), $email_content);
+    $email_content = str_replace('{role_user}', trim($args['user_role']), $email_content);
+    $email_content = str_replace('{role_user}', trim($args['user_role']), $email_content);
 
     if (isset($args['activaction_url'])) {
-        $email_content = str_replace('{user_verification_link}', $args['activaction_url'], $email_content);
-        $token = explode('/', $args['activaction_url'])[4];
-        $email_content = str_replace('{token_user}', $token, $email_content);
+        $email_content = str_replace('{user_verification_link}', trim($args['activaction_url']), $email_content);
+        $token_expiration = $args['token_expiration'];
+        $email_content = str_replace('{token_expiration}', trim($token_expiration), $email_content);
     }
 
     if (isset($args['user_profile'])) {

@@ -50,21 +50,21 @@
                                                     </h1>
                                                     <p style="font-size:15px; color:#455056; margin:8px 0 0; line-height:24px;">
                                                         Your account has been created on the {site_name}. Below is the link for your verification.</p>
-                                                    <table width="100%" cellpadding="0" cellspacing="0">
-                                                        <tr>
-                                                            <td style="width: 50%; text-align: left; color: #455056; font-size: 18px; line-height: 20px; margin: 0 0 12px 0; font-weight: 500;">
-                                                                <span>
-                                                                    <strong style="display: block; font-size: 13px; margin: 0 0 4px; color: rgba(0, 0, 0, 0.64); font-weight: normal;">Username</strong>
-                                                                    {user_name}
-                                                                </span>
-                                                            </td>
-                                                            <td style="width: 50%; text-align: right; color: #455056; font-size: 18px; line-height: 20px; margin: 0 0 12px 0; font-weight: 500;">
-                                                                <span>
-                                                                    <strong style="display: block; font-size: 13px; margin: 0 0 4px; color: rgba(0, 0, 0, 0.64); font-weight: normal;">Token</strong>
-                                                                    {token_user}
-                                                                </span>
-                                                            </td>
-                                                        </tr>
+                                                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 22px;">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td style="width:50%;text-align: center;color:#455056;font-size:18px;line-height:20px;margin: 0 0 12px 0;font-weight:500">
+                                                                    <span>
+                                                                        <strong style="display:block;font-size:13px;margin:0 0 4px;color:rgba(0,0,0,0.64);font-weight:normal">Username</strong>
+                                                                        nemotech_traveler
+                                                                    </span>
+                                                                </td>
+                                                                <td style="width:50%;text-align: center;color:#455056;font-size:18px;line-height:20px;margin:0 0 12px 0;font-weight:500">
+                                                                    <span>
+                                                                        <strong style="display:block;font-size:13px;margin:0 0 4px;color:rgba(0,0,0,0.64);font-weight:normal">Token Expiration</strong>{token_expiration}</span>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
                                                     </table>
                                                     <a class="button" href="{user_verification_link}" style="background:#00DA8E;text-decoration:none !important; display:inline-block; font-weight:500; margin-top:24px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px;">Verify account</a>
                                                 </td>
@@ -72,19 +72,16 @@
                                             <?php if (!empty($socials) or !empty($email_footer)) : ?>
                                                 <tr>
                                                     <td>
-                                                        <div style="text-align:center;color:white;border:1px solid #eee;padding: 16px;width: 605px;background-color:#272727;margin:0 auto;height:100%;margin-top: 20px;">
+                                                        <div style="text-align:center;color:white;margin:0 auto;border:1px solid #eee;padding: 15px;width: 95.2%;background-color:#00da8e;height:100%;border-bottom-left-radius:5px;border-bottom-right-radius:5px;margin-top: 40px;">
                                                             <? if ($email_footer) : ?>
-                                                                <p style="margin-top:30px;margin-bottom: 10px;font-size: 14px;padding-top: 27px;">
-                                                                    <?= $email_footer ?>
-                                                                </p>
+                                                                <?= $email_footer ?>
                                                             <?php endif; ?>
                                                             <? if ($socials) : ?>
-                                                                <p style="margin-bottom: 10px;text-align: center;font-size: 14px;padding-top: 27px;">
+                                                                <div style="margin-bottom: 10px;text-align: center;font-size: 14px;padding-top: 27px;">
                                                                     <?= $socials ?>
-                                                                </p>
+                                                                </div>
                                                             <?php endif; ?>
                                                         </div>
-
                                                     </td>
                                                 </tr>
                                             <?php endif; ?>

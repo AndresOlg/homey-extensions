@@ -78,16 +78,17 @@
                     <?php if (!empty($socials) or !empty($email_footer)) : ?>
                         <tr>
                             <td>
-                                <div style="text-align: center;color:white;margin: 0 auto;border:1px solid #eee; padding:30px;width: 95%;background-color: #272727;margin: 0 auto;height: 100%;">
+                                <div style="
+                                text-align:center;color:white;margin:0 auto;border:1px solid #eee;padding: 15px;width: 90.5%;
+                                background-color:#00da8e;height:100%;border-bottom-left-radius: 5px;border-bottom-right-radius: 5px
+                                ">
                                     <? if ($email_footer) : ?>
-                                        <p style="margin-top:30px;margin-bottom: 10px;font-size: 14px;padding-top: 27px;">
-                                            <?= $email_footer ?>
-                                        </p>
+                                        <?= $email_footer ?>
                                     <?php endif; ?>
                                     <? if ($socials) : ?>
-                                        <p style="margin-bottom: 10px;text-align: center;font-size: 14px;padding-top: 27px;">
+                                        <div style="margin-bottom: 10px;text-align: center;font-size: 14px;padding-top: 27px;">
                                             <?= $socials ?>
-                                        </p>
+                                        </div>
                                     <?php endif; ?>
                                 </div>
 

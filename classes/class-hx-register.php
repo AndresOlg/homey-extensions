@@ -190,35 +190,4 @@ class UserRegistration
         ob_clean();
         return  $res;
     }
-
-    public static function activate_account()
-    {
-        global $wpdb;
-        if (get_query_var('token_activation')) {
-
-            $activation_token = get_query_var('token_activation');
-            $user = get_users(array(
-                'meta_key' => 'verification_id',
-                'meta_value' => $activation_token
-            ));
-            if (count($user) > 0) {
-                $token_expiration = get_user_meta($user[0]->ID, 'activation_token_expiration', true);
-                $user_id = $user[0]->ID;
-                if (strtotime($token_expiration) < current_time('timestamp')) {
-                    $user_id_hash = dechex($user_id);
-                    wp_redirect(home_url("/resending/user/token/{$user_id_hash}"));
-                    exit();
-                }
-                $user_activation_key = wp_generate_password(12, true);
-                $query = $wpdb->prepare(
-                    "UPDATE {$wpdb->prefix}users SET user_activation_key = %s WHERE ID = %d",
-                    $user_activation_key,
-                    $user_id
-                );
-                $wpdb->query($query);
-                exit();
-            }
-        }
-        wp_redirect(home_url("/"));
-    }
 }
