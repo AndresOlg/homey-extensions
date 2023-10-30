@@ -43,7 +43,7 @@ function hx_wp_new_user_notification($user_id, $randonpassword, $role)
         'user_login_register'  =>  $user_login,
         'user_email_register'  =>  $user_email,
         'user_password'   => $randonpassword,
-        'activaction_url'   => "{$site_url}/activation/email/confirmation/{$vId}",
+        'activaction_url'   => "{$site_url}/notifications/confirmation/{$vId}",
         'user_role' => $user_role,
         'token_expiration' => $activation_token_expiration
     );

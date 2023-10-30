@@ -40,8 +40,10 @@ class Homey_Extensions
     {
         static::load_scripts();
         UserRegistration::run();
+        include_once HX_PLUGIN_PATH . '/functions/functions-rwrules.php';
+        init_notifications_rewrite();
     }
-
+    
     private static function load_scripts()
     {
         wp_enqueue_script(
@@ -76,7 +78,8 @@ class Homey_Extensions
 
     public static function hxPluginActivation()
     {
-        include_once(HX_PLUGIN_PATH . '/functions/functions-activate.php');
+        include_once(HX_PLUGIN_PATH . 'functions/functions-activate.php');
+
         $activation_status = update_option('hx_activation', 'true');
         if ($activation_status == 'true') {
             init_plugin_hx();
@@ -85,8 +88,12 @@ class Homey_Extensions
     public static function hxPluginDeactivate()
     {
         include_once(HX_PLUGIN_PATH . '/functions/functions-deactivate.php');
+        include_once(HX_PLUGIN_PATH . '/functions/functions-rwrules.php');
         remove_action('plugins_loaded', array(__CLASS__, 'load_scripts'), 0);
+        remove_action('init', 'init_notifications_rewrite');
+
         update_option('hx_activation', 'false');
+        flush_rewrite_rules();
     }
 
     private static function hxIncludeFiles()

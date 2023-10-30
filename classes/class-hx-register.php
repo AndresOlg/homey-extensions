@@ -41,8 +41,6 @@ class UserRegistration
         });
 
         add_action('wp_enqueue_scripts', array($this, 'loadAjaxRegister'));
-
-        add_action('template_redirect', array($this, 'activate_account'));
     }
 
     public function loadAjaxRegister()
