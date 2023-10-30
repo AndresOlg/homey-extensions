@@ -34,7 +34,7 @@ function hx_wp_new_user_notification($user_id, $randonpassword, $role)
     $vId = md5($user_id);
     update_user_meta($user_id, 'verification_id', $vId);
     update_user_meta($user_id, 'is_email_verified', 0);
-    update_user_meta($user_id, 'activation_token_expiration', date('Y-m-d H:i:s', strtotime('+24 hours')));
+    update_user_meta($user_id, 'activation_token_expiration', date('Y-m-d H:i:s', strtotime('+12 hours')));
 
     $site_url = get_option('siteurl');
 
@@ -43,7 +43,7 @@ function hx_wp_new_user_notification($user_id, $randonpassword, $role)
         'user_login_register'  =>  $user_login,
         'user_email_register'  =>  $user_email,
         'user_password'   => $randonpassword,
-        'activaction_url'   => "{$site_url}/notifications/confirmation/{$vId}",
+        'activaction_url'   => "{$site_url}/notifications/confirmation/{$vId}/",
         'user_role' => $user_role,
         'token_expiration' => $activation_token_expiration
     );

@@ -1,10 +1,13 @@
 <?php
-include_once HX_PLUGIN_PATH . '/templates/utils/hx-loader-timing.phtml';
+
+include_once(HX_TEMPLATES . '/elementor-templates.php');
+
+use TemplatesHX\Elementor_Template_Handler as TemplateHandler;
+
 $loader = null;
 function process_activation($success = null)
 {
     global $wpdb, $loader;
-
     $user = get_users(array(
         'meta_key' => 'verification_id',
         'meta_value' => get_query_var('token_activation')
@@ -16,18 +19,18 @@ function process_activation($success = null)
 
         if (strtotime($token_expiration) < current_time('timestamp')) {
             $user_id_hash = dechex($user_id);
-            wp_redirect(home_url("/resending/user/token/{$user_id_hash}"));
+            hide_loader_script();
+            render_view_fail();
+            sleep(3);
             $success = false;
+            wp_redirect(home_url("/resending/user/token/{$user_id_hash}"));
         } elseif (is_null($success)) {
-            ob_start();
             $loader = render();
-            ob_clean();
             echo $loader;
             $success = true;
+            sleep(3);
             process_activation($success);
         } elseif ($success === true) {
-            $content = render_view_success();
-            echo $content;
             $timestamp = time();
             $random_string = wp_generate_password(31, false);
             $user_activation_key = $timestamp . ':$P$' . $random_string;
@@ -38,39 +41,42 @@ function process_activation($success = null)
                 $user_id
             );
             $wpdb->query($query);
-            exit();
+
+            hide_loader_script();
+            update_user_meta($user_id, 'is_email_verified', 1);
+
+            $content = render_view_success($user);
+            echo $content;
+            get_footer();
+            
+            return true;
         }
     }
 }
-function hide_loader_script() {
-    echo "<script>setTimeout(()=>document.querySelectorAll('.wrapper')[0].style.display='none',2000)</script>";
-}
-add_action('shutdown', 'hide_loader_script');
-function render_view_success()
+function hide_loader_script()
 {
-    $template = "
-    <div class='modal-header'>
-    <h4 class='modal-title'>Forgot Password</h4>
-    </div>
-    <div class='modal-body'>
-    <div class='modal-login-form'>
-        <p>Please enter your username or email address. You will receive a link to create a new password via email.</p>
-        <form>
-            <div class='form-group'>
-                <input type='email' name='user_login_forgot' id='user_login_forgot' class='form-control forgot-password' placeholder='Enter your username or email'>
-            </div>
-    
-            <input type='hidden' id='homey_resetpassword_security' name='homey_resetpassword_security' value='5f9935db53'><input type='hidden' name='_wp_http_referer' value='/'> <button type='submit' id='homey_forgetpass' class='btn btn-primary btn-full-width'>Submit</button>
-            <div id='homey_msg_reset' class='message'></div>
-        </form>
-    </div>
-    </div>
-    ";
-    return $template;
+    echo "<script>setTimeout(()=>document.querySelectorAll('.wrapper')[0].remove(),2000)</script>";
+}
+function render_view_success($user)
+{
+    $Elementor_Template = TemplateHandler::renderTemplate('verified_user');
+    $Elementor_Template = str_replace('{username}', $user[0]->user_login, $Elementor_Template);
+    return $Elementor_Template;
 }
 function render_view_fail()
 {
     $template = "
+    <style>
+        body,html{
+            background-color: var(--e-global-color-3886dae) !important;
+            scroll
+        }
+        @media (min-width: 992px) {
+            body {
+                overflow: hidden;
+            }
+        }
+    </style>
     <div class='modal-header'>
     <button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>×</span></button>
     <h4 class='modal-title'>Forgot Password</h4>

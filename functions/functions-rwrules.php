@@ -26,11 +26,16 @@ function process_notifications_params()
     $template_path = HX_TEMPLATES . '/pages/notification/';
 
     if (get_query_var('token_activation')) {
+        include_once HX_PLUGIN_PATH . '/templates/utils/hx-loader-timing.phtml';
+        get_header();
+        
         include_once($template_path . 'user_activation.phtml');
         process_activation();
+
         exit;
     } elseif (get_query_var('user_reactivation')) {
         $user = get_query_var('user_reactivation');
+        include_once HX_PLUGIN_PATH . '/templates/utils/hx-loader-timing.phtml';
         include_once($template_path . 'user_token_resend.phtml');
         exit;
     }
