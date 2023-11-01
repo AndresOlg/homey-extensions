@@ -132,8 +132,8 @@ function hx_send_emails($user_email, $subject, $message, $type, $args)
     $email_content = str_replace('{email_user}', trim($args['user_email_register']), $email_content);
     $email_content = str_replace('{site_name}', get_bloginfo('name'), $email_content);
     $email_content = str_replace('{user_name}', trim($args['user_login_register']), $email_content);
-    $email_content = str_replace('{role_user}', trim($args['user_role']), $email_content);
-    $email_content = str_replace('{role_user}', trim($args['user_role']), $email_content);
+    $role_ = trim($args['user_role']) == 'homey_renter' ? '&#129523;&nbsp;&nbsp;Traveler' : '&#128718;&nbsp;&nbsp;Hoster';
+    $email_content = str_replace('{role_user}', $role_, $email_content);
 
     if (isset($args['activaction_url'])) {
         $email_content = str_replace('{user_verification_link}', trim($args['activaction_url']), $email_content);

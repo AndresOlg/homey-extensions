@@ -37,6 +37,7 @@ function create_tables_plugin_hx()
         "create_table_matchs",
         "create_table_preferences",
         "create_table_user_history",
+        "create_table_sessions",
         "create_table_preferences_history"
     );
 
@@ -237,6 +238,26 @@ function create_table_preferences_history()
         preferences JSON NOT NULL,
         PRIMARY KEY (id)
 
+    )";
+    $wpdb->query($sql);
+}
+
+function create_table_sessions()
+{
+    global $wpdb;
+    $table_name = HX_PREFIX . "sessions_register";
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
+        return;
+    }
+    $sql = "CREATE TABLE IF NOT EXISTS $table_name(
+        sessionID INT NOT NULL AUTO_INCREMENT,
+        userID INT NOT NULL,
+        user_role ENUM(\"hoster\",\"traveler\"),
+        date_start DATETIME,
+        date_end DATETIME,
+        ip_dir VARCHAR(15),
+        lastActivity DATETIME,
+        PRIMARY KEY (`sessionID`)
     )";
     $wpdb->query($sql);
 }

@@ -1,4 +1,5 @@
 <?php
+namespace UserHX\Models;
 class UserProfileData
 {
     private static $table_name;

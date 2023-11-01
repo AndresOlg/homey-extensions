@@ -28,11 +28,12 @@ class Elementor_Template_Handler
     public static function renderTemplate($template_name)
     {
         add_action('wp_enqueue_scripts', function () {
-            wp_enqueue_style('elementor-styles');
             wp_enqueue_style('elementor-global-styles');
+            wp_enqueue_style('elementor-styles');
             wp_enqueue_style('elementor-frontend');
             wp_enqueue_script('elementor-frontend');
         });
+
 
         $template_id = self::get_element_templateid_by_name($template_name);
         $elementor_template_content = ElementorPlugin::instance()->frontend->get_builder_content($template_id);

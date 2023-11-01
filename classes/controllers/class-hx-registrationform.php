@@ -130,11 +130,11 @@ class ManageRegistrationForm
 
         $data_form = static::$data_form;
         $password = $data_form['user_pass'];
-        $hashed_password = wp_hash_password($password);
+        $password = ascii_string(explode('-', $password));
 
         $user_data = array(
             'user_login' => $data_form['user_login'],
-            'user_pass' => $hashed_password,
+            'user_pass' => $password,
             'user_email' => $data_form['user_email'],
             'role' => get_user_role($data_form['user_role']),
             'user_status' => 0
@@ -160,7 +160,7 @@ class ManageRegistrationForm
                 static::$data_form['filename'] = $image_data['data']['filename'];
                 static::$data_form['filepath'] = $image_data['data']['filepath'];
 
-                return array('status' => 'success','user_id' => $user_id, 'filename' => static::$data_form['filename'], 'filepath' => static::$data_form['filepath'], 'pass' => $hashed_password);
+                return array('status' => 'success', 'user_id' => $user_id, 'filename' => static::$data_form['filename'], 'filepath' => static::$data_form['filepath'], 'pass' => $hashed_password);
             }
         } else {
             $error_data = static::$errorHandler->getError('ERR-U009', 'user');

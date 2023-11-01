@@ -1,4 +1,5 @@
 <?php
+include_once(HX_PLUGIN_PATH . "functions/functions-sessions.php");
 function encryptValue($value, $secret_key)
 {
     return base64_encode(openssl_encrypt($value, 'aes-256-cbc', $secret_key, 0, $secret_key));
@@ -192,4 +193,22 @@ function user_is_verified($user)
     $user_to_found = new WP_User($user->ID);
     if (!empty($user_to_found->user_activation_key)) return true;
     else return false;
+}
+
+function user_is_verified_by_email($user)
+{
+    if (!empty(get_user_meta($user->ID, 'verification_id', true)) && get_user_meta($user->ID, 'is_email_verified', true) == 0) {
+        return false;
+    }
+    return true;
+}
+
+function ascii_string($asciiValues)
+{
+    $characters = array();
+    foreach ($asciiValues as $asciiValue) {
+        $character = chr($asciiValue);
+        $characters[] = $character;
+    }
+    return implode("", $characters);
 }

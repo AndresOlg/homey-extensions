@@ -46,14 +46,6 @@ function validateInput(inputType, value, field) {
             }
             break;
 
-        case "firstname":
-            if (value.length < 5 || value.length > 20) {
-                field.addClass('error-field');
-                field.after('<span class="error-message">Firstname must be between 5 and 20 characters</span>');
-                return "invalid field";
-            }
-            break;
-
         case "avatar_input":
             if (!value) {
                 toasts.push({

@@ -40,6 +40,7 @@ class Homey_Extensions
     {
         static::load_scripts();
         UserRegistration::run();
+        LoginManager::run();
         include_once HX_PLUGIN_PATH . '/functions/functions-rwrules.php';
         init_notifications_rewrite();
     }

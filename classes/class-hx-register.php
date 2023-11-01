@@ -6,7 +6,7 @@ include_once(HX_TEMPLATES . '/elementor-templates.php');
 
 /** HX includes */
 include_once(HX_PLUGIN_PATH . 'functions/functions-email.php');
-include_once(HX_PLUGIN_PATH . '/classes/controllers/class-hx-registrationform.php');
+include_once(HX_PLUGIN_PATH . 'classes/controllers/class-hx-registrationform.php');
 
 use TemplatesHX\Elementor_Template_Handler as TemplateHandler;
 use ManageFormsHX\ManageRegistrationForm as RegistrationForm;
@@ -34,7 +34,7 @@ class UserRegistration
 
         add_action('wp_ajax_traveler_preferences', array($this, 'registerTraveler'));
         add_action('wp_ajax_nopriv_traveler_preferences', array($this, 'registerTraveler'));
-        add_action('template_redirect', array($this, 'chooseUserRedirection'));
+        add_action('template_redirect', array($this, 'chooseUserRedirectionRegister'));
 
         add_action('wp_enqueue_scripts', function () {
             wp_enqueue_script('elementor-frontend');
@@ -54,7 +54,7 @@ class UserRegistration
         }
     }
 
-    public function chooseUserRedirection()
+    public function chooseUserRedirectionRegister()
     {
         if (is_user_logged_in() && is_page('register')) {
             wp_redirect(home_url('/profile'));
@@ -157,7 +157,7 @@ class UserRegistration
      */
 
     /* { registration Form } */
-    public function registrationFormTemplate()
+    public static function registrationFormTemplate()
     {
         $template_name = 'register_form';
         $Elementor_Template = TemplateHandler::renderTemplate($template_name);
@@ -165,7 +165,7 @@ class UserRegistration
     }
 
     /* { registration Hoster Form } */
-    public function hosterPreferencesFormTemplate()
+    public static function hosterPreferencesFormTemplate()
     {
         $template_name = 'hoster_form';
         $Elementor_Template = TemplateHandler::renderTemplate($template_name);
@@ -173,7 +173,7 @@ class UserRegistration
     }
 
     /* { registration Traveler Form } */
-    public function travelerPreferencesFormTemplate()
+    public static function travelerPreferencesFormTemplate()
     {
         $template_name = 'traveler_form';
         $Elementor_Template = TemplateHandler::renderTemplate($template_name);

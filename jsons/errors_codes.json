@@ -2,7 +2,7 @@
     "errors": [
         {
             "code": "ERR-U001",
-            "message": "Username does not exist",
+            "message": "{Username} does not exist",
             "type": "user"
         },
         {
@@ -27,7 +27,7 @@
         },
         {
             "code": "ERR-U006",
-            "message": "Your role is not authorized for this operation",
+            "message": "Your profile is not activated please,\n check your email inbox or spam box to find activation link",
             "type": "user"
         },
         {
@@ -43,6 +43,16 @@
         {
             "code": "ERR-U009",
             "message": "Error creating user, try again",
+            "type": "user"
+        },
+        {
+            "code": "ERR-U010",
+            "message": "Error The password field is empty.",
+            "type": "user"
+        },
+        {
+            "code": "ERR-U011",
+            "message": "Error login user.",
             "type": "user"
         },
         {
