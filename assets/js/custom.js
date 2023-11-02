@@ -23,20 +23,20 @@
             arrival_date: $(".search-date-range-arrive [name=\"arrive\"]:first").val() || '0000-00-00',
             arrival_city: $(".search-destination [name=\"city\"].selectpicker:first").val() || ''
         }
-    
+
         const errorMessages = {
             adults: "The number of adults must be at least 1 person",
             arrival_date: "The arrival date is invalid or empty",
             arrival_city: "Arrival city is invalid or empty"
         }
-    
+
         const invalidField = Object.keys(guest).find(field => {
             if (field !== 'childs' && field !== 'pets') {
                 const value = guest[field].toString();
                 return /^(null|undefined|0|0000-00-00|)$/.test(value);
             }
         });
-    
+
         if (invalidField) {
             toasts.push({
                 title: 'Error',
@@ -55,9 +55,15 @@
             window.location = window.location.origin + '/register';
         }
     });
-    
 
-    $('.login-register.list-inline a:nth-child(1)').on('click', function (e) {
+
+    $('.login-register.list-inline a')[0].on('click', function (e) {
+        e.preventDefault();
+        if (localStorage.getItem('guest_data')) localStorage.removeItem('guest_data');
+        window.location = window.location.origin + '/login';
+    });
+
+    $('.login-register.list-inline a')[1].on('click', function (e) {
         e.preventDefault();
         if (localStorage.getItem('guest_data')) localStorage.removeItem('guest_data');
         window.location = window.location.origin + '/register';

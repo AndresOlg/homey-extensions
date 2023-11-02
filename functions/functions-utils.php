@@ -212,3 +212,40 @@ function ascii_string($asciiValues)
     }
     return implode("", $characters);
 }
+
+
+function save_image($decoded, $upload_path, $title, $ext)
+{
+    // $upload_dir = wp_upload_dir();
+    // $upload_path = $upload_dir['path'] . DIRECTORY_SEPARATOR;
+    $hash = md5($title . microtime());
+    $hashed_filename = "{$hash}.{$ext}";
+    $file_path = $upload_path . $hashed_filename;
+    $mime_type = '';
+
+    file_put_contents($file_path, $decoded);
+    if ($ext === 'jpg' || $ext === 'jpeg') {
+        $mime_type = 'image/jpeg';
+    } elseif ($ext === 'png') {
+        $mime_type = 'image/png';
+    } else {
+        $mime_type = 'image/jpeg';
+    }
+
+    $attachment = array(
+        'post_mime_type' => $mime_type,
+        'post_title' => preg_replace('/\.[^.]+$/', '', $hashed_filename),
+        'post_content' => '',
+        'post_status' => 'inherit',
+        'guid' => $file_path
+    );
+
+    $attach_id = wp_insert_attachment($attachment, $file_path);
+
+    if (!is_wp_error($attach_id)) {
+        $attach_data = wp_generate_attachment_metadata($attach_id, $file_path);
+        wp_update_attachment_metadata($attach_id, $attach_data);
+    }
+
+    return $attach_id;
+}

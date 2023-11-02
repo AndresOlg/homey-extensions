@@ -3,7 +3,7 @@
 include_once(HX_PLUGIN_PATH . '/functions/functions-utils.php');
 include_templates_emails();
 
-function hx_wp_new_user_notification($user_id, $randonpassword, $role)
+function hx_wp_new_user_notification($user_id, $randonpassword = '', $role, $type = '')
 {
     $user = new WP_User($user_id);
 
@@ -11,32 +11,32 @@ function hx_wp_new_user_notification($user_id, $randonpassword, $role)
     $user_email = stripslashes($user->user_email);
     $user_role = stripslashes($role);
 
-    // Send notification to admin
-    $args = array(
-        'user_login_register' => $user_login,
-        'user_profile' => site_url("/dashboard/?dpage=users&user-id=$user_id"),
-        'user_password'   => $randonpassword,
-        'user_email_register' => $user_email,
-        'user_role' => $user_role
-    );
-    $email_admin = hx_send_mail(get_option('admin_email'), 'admin_new_user_register', $args);
+    if (empty($type)) {
+        // Send notification to admin
+        $args = array(
+            'user_login_register' => $user_login,
+            'user_profile' => site_url("/dashboard/?dpage=users&user-id=$user_id"),
+            'user_password'   => $randonpassword,
+            'user_email_register' => $user_email,
+            'user_role' => $user_role
+        );
+        $email_admin = hx_send_mail(get_option('admin_email'), 'admin_new_user_register', $args);
 
-    if (is_wp_error($email_admin)) {
-        return $email_admin;
+        if (is_wp_error($email_admin)) {
+            return $email_admin;
+        }
+
+        // Return if password in empty
+        if (empty($randonpassword)) {
+            return;
+        }
     }
-
-    // Return if password in empty
-    if (empty($randonpassword)) {
-        return;
-    }
-
     // Send notification to registered user
     $vId = md5($user_id);
-    update_user_meta($user_id, 'verification_id', $vId);
+    $site_url = get_option('siteurl');
     update_user_meta($user_id, 'is_email_verified', 0);
     update_user_meta($user_id, 'activation_token_expiration', date('Y-m-d H:i:s', strtotime('+12 hours')));
-
-    $site_url = get_option('siteurl');
+    update_user_meta($user_id, 'verification_id', $vId);
 
     $activation_token_expiration = get_user_meta($user_id, 'activation_token_expiration', true);
     $args = array(
@@ -48,7 +48,7 @@ function hx_wp_new_user_notification($user_id, $randonpassword, $role)
         'token_expiration' => $activation_token_expiration
     );
 
-    $email_user = hx_send_mail($user_email, 'new_user_register', $args);
+    $email_user = hx_send_mail($user_email, !empty($type) ? 'new_user_register' : $type, $args);
 
     if (!is_wp_error($email_user)) {
         return (array(
@@ -180,6 +180,13 @@ function get_template_email($type, $message, $socials, $email_footer)
             $template_path = HX_TEMPLATES . "/emails/admin";
             ob_start();
             include_once($template_path . '/new_user.phtml');
+            $content_mail = ob_get_clean();
+            ob_clean();
+            break;
+        case 'onlytoken':
+            $template_path = HX_TEMPLATES . "/emails";
+            ob_start();
+            include_once($template_path . '/only_token.phtml');
             $content_mail = ob_get_clean();
             ob_clean();
             break;

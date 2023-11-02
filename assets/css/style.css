@@ -31,12 +31,6 @@
   margin-top: 5px !important;
 }
 
-.navi>.main-menu>li>a,
-.account-loggedin,
-.login-register a {
-  color: white !important;
-}
-
 a:hover:not(.active) {
   cursor: pointer !important;
 }

@@ -1,36 +1,41 @@
 <?php
+
 namespace UserHX\Models;
+
 class UserProfileData
 {
-    private static $table_name;
+    public static $table_name;
 
     public function __construct()
     {
-        $this->table_name = HX_PREFIX . 'user_profile_data';
+        static::$table_name = HX_PREFIX . 'user_profile_data';
     }
 
     public function add($data)
     {
         global $wpdb;
-        return $wpdb->insert($this->table_name, $data);
+        return $wpdb->insert(static::$table_name, $data);
     }
 
     public static function get($user_id)
     {
         global $wpdb;
-        return $wpdb->get_row("SELECT * FROM self::table_name WHERE user_id = $user_id", ARRAY_A);
+        $table_name = static::$table_name;
+        return $wpdb->get_row("SELECT * FROM $table_name WHERE user_id = $user_id", ARRAY_A);
     }
 
     public static function getAll()
     {
         global $wpdb;
-        return $wpdb->get_results("SELECT * FROM self::table_name", ARRAY_A);
+        $table_name = static::$table_name;
+        return $wpdb->get_results("SELECT * FROM $table_name", ARRAY_A);
     }
 
     public static function getByAttr($attr, $value)
     {
         global $wpdb;
-        return $wpdb->get_results($wpdb->prepare("SELECT * FROM self::table_name WHERE $attr = %s", $value), ARRAY_A);
+        $table_name = $table_name = static::$table_name;
+        return $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name WHERE $attr = %s", $value), ARRAY_A);
     }
 
     public static function getByFilters($filters)
@@ -47,7 +52,8 @@ class UserProfileData
 
         if (!empty($where)) {
             $where_clause = implode(' AND ', $where);
-            $sql = $wpdb->prepare("SELECT * FROM self::table_name WHERE $where_clause");
+            $table_name = $table_name = static::$table_name;
+            $sql = $wpdb->prepare("SELECT * FROM $table_name WHERE $where_clause");
             return $wpdb->get_results($sql, ARRAY_A);
         } else {
             return array();

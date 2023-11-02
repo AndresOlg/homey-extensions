@@ -59,48 +59,52 @@ class LoginManager
 
     public function chooseUserRedirectionLogin()
     {
-        if (is_user_logged_in() && (is_page('login/') or is_page('register/') or is_page('/'))) {
+        if (is_user_logged_in() && (is_page('login/') or is_page('register'))) {
             $user = wp_get_current_user();
             $userprofile = new UserProfile();
             $redirect_url = '';
-            if (!isset($_COOKIE['role_user'])) {
+            if (isset($_COOKIE['role_user'])) {
                 $user_role = $_COOKIE['role_user'];
                 $user_id = $user->ID;
-
                 if (is_null($userprofile->get($user_id))) {
                     $redirect_url = $this->redirect_by_role($user_role);
+                    wp_redirect($redirect_url);
                 } elseif ($userprofile->get($user_id)) {
-
                     $data = $userprofile->get($user_id)[0];
                     $completed = $data['profile_score'] === 100;
-
                     if ($completed) $redirect_url = home_url('/profile');
                     else $redirect_url = $this->redirect_by_role($user_role);
+                    wp_redirect($redirect_url);
                 }
             }
-            wp_redirect($redirect_url);
-            exit;
-        } elseif (is_page('login/')) {
+        } elseif (is_user_logged_in() && is_page('login/')) {
+            wp_enqueue_script(
+                'validate-login-script',
+                HX_PLUGIN_URL . 'assets/js/validate_inputs_login.js',
+                array('jquery'),
+                HX_VERSION,
+                true
+            );
             $this->loginFormTemplate();
         }
     }
 
     public function formRedirectionLogin()
     {
-        if (is_user_logged_in() && is_page('/login/travelerform')) {
+        $preferencesform_byrole = get_query_var('hxform');
+        if (is_user_logged_in() && $preferencesform_byrole == 'travelerform') {
+            var_dump($preferencesform_byrole);
             UserRegistration::travelerPreferencesFormTemplate();
-        } else if (is_user_logged_in() && is_page('/login/hosterform')) {
+            exit;
+        } else if (is_user_logged_in() && $preferencesform_byrole == 'hosterform') {
             UserRegistration::hosterPreferencesFormTemplate();
-        } elseif (is_user_logged_in()) {
-            wp_redirect(home_url('/profile'));
+            exit;
         }
     }
 
     private function loginFormTemplate()
     {
-        wp_enqueue_script('validate-login-script', HX_PLUGIN_URL . 'assets/js/validate_inputs_login.js', array('jquery'), HX_VERSION, true);
         get_template_part('template-parts/modal-window-forgot-password');
-
         $template_name = 'login_form';
         $Elementor_Template = TemplateHandler::renderTemplate($template_name);
         echo $Elementor_Template;
@@ -116,10 +120,12 @@ class LoginManager
                 $data_form = $data;
                 $data_validate = LoginForm::manageFormData($data_form);
                 if ($data_validate['status'] === 'error') {
+                    if (isset($_COOKIE['role_user'])) unset($_COOKIE['role_user']);
                     wp_send_json($data_validate);
                 } else {
                     $response = LoginForm::loginUser();
                     if ($response['status'] === 'error') {
+                        if (isset($_COOKIE['role_user'])) unset($_COOKIE['role_user']);
                         return  wp_send_json($response);
                     }
                     $user = $response['user'];

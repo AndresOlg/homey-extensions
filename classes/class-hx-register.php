@@ -89,7 +89,6 @@ class UserRegistration
                     if ($response['status'] === 'error') {
                         return  wp_send_json($response);
                     } else if (isset($user['user_id'])) {
-                        //[Path avatar image] uploads/homey-extensions/profile_avatars/$user['file_name'];
                         $user_id = $user['user_id'];
                         update_user_meta($user_id, 'profile_image', $user['filename']);
 

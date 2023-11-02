@@ -64,6 +64,7 @@ class ManageLoginForm
         }
 
         if (user_is_verified_by_email($user)) {
+            if (isset($_COOKIE['role_user'])) unset($_COOKIE['role_user']);
             setcookie('role_user', get_user_role(static::$data_form['user_role']), time() + (86400 * 30), "/");
             $response = array('status' => 'success', 'message' => 'user is valid and user is verified', 'user' => $user);
             return $response;
@@ -80,7 +81,7 @@ class ManageLoginForm
         $password = $data_form['user_pass'];
         $remember = ($data_form['remember_user'] == 'on') ? true : false;
         $user = '';
-        
+
         $creds = array();
         $creds['user_login'] = $data_form['user_login'];
         $creds['user_password'] = ascii_string(explode('-', $password));
@@ -99,6 +100,7 @@ class ManageLoginForm
             $response = array('status' => 'error', 'code' => $error_data['code'], 'message' => $message);
             return $response;
         } else {
+            static::$data_form['user_id'] = $user->ID;
             do_action('set_current_user');
             wp_set_auth_cookie($user->ID, $creds['remember']);
             $response = array('status' => 'success', 'message' => esc_html__('Login successful, redirecting...', 'homey-login-register'), 'user' => $user, 'redirect' => static::$instance->get_user_redirect());
@@ -115,14 +117,15 @@ class ManageLoginForm
         $redirect_url = '';
         $data_form = static::$data_form;
         $user_role = get_user_role($data_form['user_role']);
-        $user_id = get_user_role($data_form['user_id']);
+        $user_id = $data_form['user_id'];
 
         $userprofile = new UserProfile();
         if (is_null($userprofile->get($user_id))) {
             $redirect_url = $this->redirect_by_role($user_role);
         } elseif ($userprofile->get($user_id)) {
 
-            $data = $userprofile->get($user_id)[0];
+            $data = $userprofile->get($user_id);
+            var_dump($data);
             $completed = $data['profile_score'] === 100;
 
             if ($completed) $redirect_url = home_url('/profile');
@@ -134,7 +137,7 @@ class ManageLoginForm
 
     private static function redirect_by_role($user_role)
     {
-        if ($user_role == 'homey_renter') return home_url('/login/travelerform');
-        elseif ($user_role == 'homey_hoster') return home_url('/login/hosterform');
+        if ($user_role == 'homey_renter') return home_url('login/travelerform');
+        elseif ($user_role == 'homey_hoster') return home_url('login/hosterform');
     }
 }

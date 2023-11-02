@@ -5,8 +5,7 @@ class PreferencesData
 
     public function __construct()
     {
-        global $wpdb;
-        self::$table_name = $wpdb->prefix . 'preferences';
+        self::$table_name = HX_PREFIX . 'preferences';
     }
 
     public function add($data)

@@ -1,39 +1,35 @@
 <?php
 
 include_once(HX_TEMPLATES . '/elementor-templates.php');
+include_once(HX_PLUGIN_PATH . '/functions/functions-email.php');
 
 use TemplatesHX\Elementor_Template_Handler as TemplateHandler;
 
-$loader = null;
 function process_activation($success = null)
 {
-    global $wpdb, $loader;
+    global $wpdb;
+    echo loader();
+    sleep(2);
+    $success = true;
+
     $user = get_users(array(
         'meta_key' => 'verification_id',
         'meta_value' => get_query_var('token_activation')
     ));
-
     if (count($user) > 0) {
         $token_expiration = get_user_meta($user[0]->ID, 'activation_token_expiration', true);
         $user_id = $user[0]->ID;
 
         if (strtotime($token_expiration) < current_time('timestamp')) {
-            $user_id_hash = dechex($user_id);
             hide_loader_script();
-            render_view_fail();
-            sleep(3);
-            $success = false;
-            wp_redirect(home_url("/resending/user/token/{$user_id_hash}"));
-        } elseif (is_null($success)) {
-            $loader = render();
-            echo $loader;
-            $success = true;
-            sleep(3);
-            process_activation($success);
+            get_header();
+            echo render_view_fail();
+            get_footer();
+            process_email_token();
         } elseif ($success === true) {
             $timestamp = time();
-            $random_string = wp_generate_password(31, false);
-            $user_activation_key = $timestamp . ':$P$' . $random_string;
+            $random_string = wp_generate_password(32, false);
+            $user_activation_key = $timestamp . ':$P' . $random_string;
 
             $query = $wpdb->prepare(
                 "UPDATE {$wpdb->prefix}users SET user_activation_key = %s WHERE ID = %d",
@@ -42,15 +38,21 @@ function process_activation($success = null)
             );
             $wpdb->query($query);
 
-            hide_loader_script();
             update_user_meta($user_id, 'is_email_verified', 1);
-
+            hide_loader_script();
             $content = render_view_success($user);
+            get_header();
             echo $content;
             get_footer();
-            
+
             return true;
         }
+    } else {
+        hide_loader_script();
+        get_header();
+        echo render_view_fail();
+        get_footer();
+        process_email_token();
     }
 }
 function hide_loader_script()
@@ -59,41 +61,29 @@ function hide_loader_script()
 }
 function render_view_success($user)
 {
+    hide_loader_script();
+
     $Elementor_Template = TemplateHandler::renderTemplate('verified_user');
     $Elementor_Template = str_replace('{username}', $user[0]->user_login, $Elementor_Template);
     return $Elementor_Template;
 }
 function render_view_fail()
 {
-    $template = "
-    <style>
-        body,html{
-            background-color: var(--e-global-color-3886dae) !important;
-            scroll
+    hide_loader_script();
+    $Elementor_Template = TemplateHandler::renderTemplate('verified_fail');
+    return $Elementor_Template;
+}
+
+function process_email_token()
+{
+    if (isset($_POST['email_token'])) {
+        $emailToken = sanitize_email($_POST['email_token']);
+        $user = get_user_by('email', $emailToken);
+        $user_id = $user->ID;
+        if (!$user) {
+            echo "<script>alert('error',The email {$emailToken} not found)</script>";
+        } else {
+            hx_wp_new_user_notification($user_id, '', '', 'onlytoken');
         }
-        @media (min-width: 992px) {
-            body {
-                overflow: hidden;
-            }
-        }
-    </style>
-    <div class='modal-header'>
-    <button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>×</span></button>
-    <h4 class='modal-title'>Forgot Password</h4>
-    </div>
-    <div class='modal-body'>
-    <div class='modal-login-form'>
-        <p>Please enter your username or email address. You will receive a link to create a new password via email.</p>
-        <form>
-            <div class='form-group'>
-                <input type='email' name='user_login_forgot' id='user_login_forgot' class='form-control forgot-password' placeholder='Enter your username or email'>
-            </div>
-    
-            <input type='hidden' id='homey_resetpassword_security' name='homey_resetpassword_security' value='5f9935db53'><input type='hidden' name='_wp_http_referer' value='/'> <button type='submit' id='homey_forgetpass' class='btn btn-primary btn-full-width'>Submit</button>
-            <div id='homey_msg_reset' class='message'></div>
-        </form>
-    </div>
-    </div>
-    ";
-    return $template;
+    }
 }

@@ -39,12 +39,26 @@ class Homey_Extensions
     public static function init()
     {
         static::load_scripts();
+
         UserRegistration::run();
         LoginManager::run();
+
         include_once HX_PLUGIN_PATH . '/functions/functions-rwrules.php';
         init_notifications_rewrite();
+
+        static::load_widgets();
     }
-    
+
+    private static function load_widgets()
+    {
+        try {
+            include_once(HX_PLUGIN_PATH . '/widgets/widgets-preferences.php');
+            \Elementor\Plugin::instance()->widgets_manager->register_widget_type(new \WidgetsHX\Widget_Preferences());
+        } catch (\Throwable $th) {
+            wp_send_json(array('status' => 'error', 'code' => $th->getCode(), 'message' => $th->getMessage(), 'line' => $th->getLine(), 'file' => $th->getFile()));
+        }
+    }
+
     private static function load_scripts()
     {
         wp_enqueue_script(

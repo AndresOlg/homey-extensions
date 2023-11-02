@@ -154,13 +154,14 @@ class ManageRegistrationForm
 
                 return $response;
             } else {
+                static::$data_form['user_id'] = $user_id;
                 $image_data = self::saveProfileImage($profile_image);
                 if ($image_data['status'] !== 'success') return $image_data;
 
                 static::$data_form['filename'] = $image_data['data']['filename'];
                 static::$data_form['filepath'] = $image_data['data']['filepath'];
 
-                return array('status' => 'success', 'user_id' => $user_id, 'filename' => static::$data_form['filename'], 'filepath' => static::$data_form['filepath'], 'pass' => $hashed_password);
+                return array('status' => 'success', 'user_id' => $user_id, 'filename' => static::$data_form['filename'], 'filepath' => static::$data_form['filepath'], 'pass' => $password);
             }
         } else {
             $error_data = static::$errorHandler->getError('ERR-U009', 'user');
@@ -191,9 +192,14 @@ class ManageRegistrationForm
             $result_saveImg = saveImage_WP($img_data, $file_path, $file_name, $file_extension);
             $response = $result_saveImg;
 
+            $user_id = static::$data_form['user_id'];
+            $attach_id = save_image($img_data, $file_path, $file_name, $file_extension);
+
+            update_user_meta($user_id, 'homey_author_picture_id', $attach_id);
+
             return $response;
         } catch (\Throwable $th) {
-            array('status' => 'error', 'code' => $th->getCode(), 'message' => $th->getMessage(), 'line' => $th->getLine(), 'file' => $th->getFile());
+            return array('status' => 'error', 'code' => $th->getCode(), 'message' => $th->getMessage(), 'line' => $th->getLine(), 'file' => __FILE__);
         }
     }
 }
