@@ -7,7 +7,6 @@ include_once(HX_PLUGIN_PATH . '/functions/functions-utils.php');
 include_once(HX_TEMPLATES . '/elementor-templates.php');
 include_once(HX_PLUGIN_PATH . 'classes/class-hx-user-profile-data.php');
 include_once(HX_PLUGIN_PATH . 'classes/controllers/class-hx-loginform.php');
-require_once(HX_PLUGIN_PATH . 'classes/class-hx-register.php');
 
 /** HX includes / */
 
@@ -69,12 +68,14 @@ class LoginManager
                 if (is_null($userprofile->get($user_id))) {
                     $redirect_url = $this->redirect_by_role($user_role);
                     wp_redirect($redirect_url);
+                    exit();
                 } elseif ($userprofile->get($user_id)) {
-                    $data = $userprofile->get($user_id)[0];
-                    $completed = $data['profile_score'] === 100;
+                    $data = $userprofile->get($user_id) ? $userprofile->get($user_id)[0] : null;
+                    $completed = $data ? $data['profile_score'] === 100 : 0;
                     if ($completed) $redirect_url = home_url('/profile');
                     else $redirect_url = $this->redirect_by_role($user_role);
                     wp_redirect($redirect_url);
+                    exit();
                 }
             }
         } elseif (is_user_logged_in() && is_page('login/')) {
@@ -91,14 +92,24 @@ class LoginManager
 
     public function formRedirectionLogin()
     {
-        $preferencesform_byrole = get_query_var('hxform');
-        if (is_user_logged_in() && $preferencesform_byrole == 'travelerform') {
-            var_dump($preferencesform_byrole);
-            UserRegistration::travelerPreferencesFormTemplate();
-            exit;
-        } else if (is_user_logged_in() && $preferencesform_byrole == 'hosterform') {
-            UserRegistration::hosterPreferencesFormTemplate();
-            exit;
+        $user = wp_get_current_user();
+        $userprofile = new UserProfile();
+        $redirect_url = '';
+        if (isset($_COOKIE['role_user'])) {
+            $user_role = $_COOKIE['role_user'];
+            $user_id = $user->ID;
+            if (is_null($userprofile->get($user_id))) {
+                $redirect_url = $this->redirect_by_role($user_role);
+                wp_redirect($redirect_url);
+                exit();
+            } elseif ($userprofile->get($user_id)) {
+                $data = $userprofile->get($user_id) ? $userprofile->get($user_id)[0] : null;
+                $completed = $data ? $data['profile_score'] === 100 : 0;
+                if ($completed) $redirect_url = home_url('/profile');
+                else $redirect_url = $this->redirect_by_role($user_role);
+                wp_redirect($redirect_url);
+                exit();
+            }
         }
     }
 
@@ -141,7 +152,7 @@ class LoginManager
     }
     private static function redirect_by_role($user_role)
     {
-        if ($user_role == 'homey_renter') return home_url('/login/travelerform');
-        elseif ($user_role == 'homey_hoster') return home_url('/login/hosterform');
+        if ($user_role == 'homey_renter') return home_url('travelerform');
+        elseif ($user_role == 'homey_hoster') return home_url('hosterform');
     }
 }

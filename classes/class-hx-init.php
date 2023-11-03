@@ -45,22 +45,23 @@ class Homey_Extensions
 
         include_once HX_PLUGIN_PATH . '/functions/functions-rwrules.php';
         init_notifications_rewrite();
-
-        static::load_widgets();
+        static::load_shortcodes();
     }
 
-    private static function load_widgets()
+    private static function load_shortcodes()
     {
-        try {
-            include_once(HX_PLUGIN_PATH . '/widgets/widgets-preferences.php');
-            \Elementor\Plugin::instance()->widgets_manager->register_widget_type(new \WidgetsHX\Widget_Preferences());
-        } catch (\Throwable $th) {
-            wp_send_json(array('status' => 'error', 'code' => $th->getCode(), 'message' => $th->getMessage(), 'line' => $th->getLine(), 'file' => $th->getFile()));
-        }
+        include_once HX_PLUGIN_PATH . '/templates/stepform/traveler_preferences.php';
     }
 
     private static function load_scripts()
     {
+        wp_enqueue_script(
+            'intTelInput',
+            HX_PLUGIN_URL . 'assets/js/intlTelInput.js',
+            array('jquery'),
+            HX_VERSION,
+            true
+        );
         wp_enqueue_script(
             'hx-toast-script',
             HX_PLUGIN_URL . 'assets/js/hx_toast.js',

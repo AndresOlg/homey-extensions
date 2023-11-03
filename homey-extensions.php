@@ -34,8 +34,6 @@ global $wpdb;
 $prefix_homey_extensions =            $wpdb->prefix . 'hx_';
 define('HX_PREFIX',                   $prefix_homey_extensions);
 
-error_reporting(E_ALL);
-
 //Main plugin file
 require_once HX_PLUGIN_PATH . '/classes/class-hx-init.php';
 

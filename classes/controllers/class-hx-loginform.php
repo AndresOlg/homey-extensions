@@ -137,7 +137,7 @@ class ManageLoginForm
 
     private static function redirect_by_role($user_role)
     {
-        if ($user_role == 'homey_renter') return home_url('login/travelerform');
-        elseif ($user_role == 'homey_hoster') return home_url('login/hosterform');
+        if ($user_role == 'homey_renter') return home_url('travelerform');
+        elseif ($user_role == 'homey_hoster') return home_url('hosterform');
     }
 }

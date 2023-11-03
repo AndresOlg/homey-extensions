@@ -29,7 +29,8 @@ class PreferencesData
     public static function getByAttr($attr, $value)
     {
         global $wpdb;
-        return $wpdb->get_results($wpdb->prepare("SELECT * FROM " . self::$table_name . " WHERE $attr = %s", $value), ARRAY_A);
+        $rs=$wpdb->get_results($wpdb->prepare("SELECT * FROM " . self::$table_name . " WHERE $attr = %s", $value), ARRAY_A);
+        return $rs;
     }
 
     public static function getByFilters($filters)

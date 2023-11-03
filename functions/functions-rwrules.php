@@ -6,28 +6,12 @@ function init_notifications_rewrite()
         'index.php?token_activation=$matches[1]',
         'top'
     );
-    add_rewrite_rule(
-        '^login/([^/]*)/?',
-        'index.php?hxform=$matches[1]',
-        'top'
-    );
-    add_rewrite_rule(
-        '^login/([^/]*)/?',
-        'index.php?hxform=$matches[1]',
-        'top'
-    );
     add_filter('query_vars', 'notifications_vars', 10, 1);
-    add_filter('query_vars', 'preferencesdata_vars', 10, 1);
 }
 
 function notifications_vars($vars)
 {
     $vars[] = 'token_activation';
-    return $vars;
-}
-function preferencesdata_vars($vars)
-{
-    $vars[] = 'hxform';
     return $vars;
 }
 

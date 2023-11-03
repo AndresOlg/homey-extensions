@@ -56,17 +56,61 @@
         }
     });
 
+    if ($('.login-register.list-inline a')) {
+        $('.login-register.list-inline a')[0].on('click', function (e) {
+            e.preventDefault();
+            if (localStorage.getItem('guest_data')) localStorage.removeItem('guest_data');
+            window.location = window.location.origin + '/login';
+        });
 
-    $('.login-register.list-inline a')[0].on('click', function (e) {
-        e.preventDefault();
-        if (localStorage.getItem('guest_data')) localStorage.removeItem('guest_data');
-        window.location = window.location.origin + '/login';
+        $('.login-register.list-inline a')[1].on('click', function (e) {
+            e.preventDefault();
+            if (localStorage.getItem('guest_data')) localStorage.removeItem('guest_data');
+            window.location = window.location.origin + '/register';
+        });
+    }
+    /* INITIALIZE PHONE INPUTS WITH THE intlTelInput FEATURE*/
+    let input = document.querySelector("#form-field-field_phone");
+
+    let iti = intlTelInput(input);
+
+    $(window).on("load", function () {
+
+        intlTelInputGlobals.loadUtils("https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/15.0.2/js/utils.js");
+
+        intlTelInput(input, {
+            initialCountry: "us",
+            separateDialCode: true,
+            nationalMode: false,
+        });
+
+        let countryData = window.intlTelInputGlobals.getCountryData();
+
+        console.log(countryData);
+
+
     });
 
-    $('.login-register.list-inline a')[1].on('click', function (e) {
-        e.preventDefault();
-        if (localStorage.getItem('guest_data')) localStorage.removeItem('guest_data');
-        window.location = window.location.origin + '/register';
-    });
+    /* ADD A PATTERN MASK IN PHONE INPUT AND REMOVE PREVIOUS VALUE - ON COUNTRY CHANGE */
+    $("#form-field-field_phone").on('focus', function (e, countryData) {
 
+        $("#form-field-field_phone").val("").trigger("input");
+
+        let placeholder = $("#form-field-field_phone").attr("placeholder");
+
+        let pattern = placeholder.replace(/-/g, " ");
+        let phoneNumber = pattern.replace(/\d/gi, "0");
+
+        $("#field_phone").mask(phoneNumber);
+
+
+
+    });
+    $("#form-field-field_phone").focusout(function (e, countryData) {
+        let phone_number = $("#form-field-field_phone").val();
+        phone_number = iti.getNumber(intlTelInputUtils.numberFormat.E164);
+
+        console.log(phone_number);
+    });
 })(jQuery);
+

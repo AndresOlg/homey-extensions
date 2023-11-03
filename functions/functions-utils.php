@@ -216,8 +216,6 @@ function ascii_string($asciiValues)
 
 function save_image($decoded, $upload_path, $title, $ext)
 {
-    // $upload_dir = wp_upload_dir();
-    // $upload_path = $upload_dir['path'] . DIRECTORY_SEPARATOR;
     $hash = md5($title . microtime());
     $hashed_filename = "{$hash}.{$ext}";
     $file_path = $upload_path . $hashed_filename;

@@ -3,7 +3,7 @@
 include_once(HX_PLUGIN_PATH . '/functions/functions-utils.php');
 include_templates_emails();
 
-function hx_wp_new_user_notification($user_id, $randonpassword = '', $role, $type = '')
+function hx_wp_new_user_notification($user_id, $randonpassword, $role, $type)
 {
     $user = new WP_User($user_id);
 

@@ -197,7 +197,7 @@ function insert_traveler_preferences()
             /*{-------------------------------------------------------------}*/
         );
 
-    $check_query = "SELECT COUNT(*) FROM $table_name";
+    $check_query = "SELECT COUNT(*) FROM $table_name where preferences_type='traveler'";
     $table_row_count = $wpdb->get_var($check_query);
 
     if ($table_row_count == 0) {
@@ -353,9 +353,9 @@ function insert_hoster_preferences()
         );
 
     // Insert default data
-    $check_query = "SELECT COUNT(*) FROM $table_name";
+    $check_query = "SELECT COUNT(*) FROM $table_name  where preferences_type='hoster'";
     $table_row_count = $wpdb->get_var($check_query);
-    
+
     if ($table_row_count == 0) {
         foreach ($data_to_insert as $idx => $data) {
             $existing_record = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE preference_name = %s", $data[0]));
